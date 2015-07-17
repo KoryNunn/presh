@@ -1,0 +1,7 @@
+things(pluck scheduler){
+    scheduler.add((){
+        pluck();
+    });
+};
+
+things(sound('pluck.mp3') schedule(120));

@@ -1,0 +1,24 @@
+{
+  "name": "music-lang",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "watch": "watchify example -o example/index.browser.js -d"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "ansi-styles": "^2.0.1",
+    "audio-clock": "^0.2.0",
+    "brfs": "^1.4.0",
+    "simple-ajax": "^2.1.0",
+    "webworkify": "^1.0.2"
+  },
+  "browserify": {
+    "transform": [
+      "brfs"
+    ]
+  }
+}
