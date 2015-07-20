@@ -1,5 +1,6 @@
 var Scope = require('./scope'),
     toValue = require('./toValue'),
+    opperators = require('./opperators'),
     toArray = function(list){return Array.prototype.slice.call(list);};
 
 var reservedKeywords = {
@@ -97,6 +98,18 @@ function value(value, scope){
     return value.value;
 }
 
+function opperator(opperator, scope){
+    if(opperator.left){
+        return opperators[opperator.name](executeToken(opperator.left, scope).value, executeToken(opperator.right, scope).value);
+    }
+
+    return opperators[opperator.name](executeToken(opperator.right, scope).value);
+}
+
+function parenthesisGroup(parenthesisGroup, scope){
+    return execute(parenthesisGroup.content, scope).value;
+}
+
 var handlers = {
     turnary: turnary,
     functionCall: functionCall,
@@ -107,7 +120,8 @@ var handlers = {
     set: set,
     period: period,
     value: value,
-    lessThan: lessThan
+    opperator: opperator,
+    parenthesisGroup: parenthesisGroup
 };
 
 function executeToken(token, scope){

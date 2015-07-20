@@ -1,3 +1,5 @@
+var opperators = require('./opperators');
+
 function lexString(source){
     var startChar = source.charAt(0);
 
@@ -136,28 +138,13 @@ function lexCharacters(source){
     };
 }
 
-var opperators = {
-    '@': 'at',
-    ':': 'colon',
-    '>': 'greaterThan',
-    '<': 'lessThan',
-    '*': 'asterix',
-    '.': 'period',
-    '/': 'forwardSlash',
-    '~': 'tilde',
-    '+': 'plus',
-    '?': 'questionMark',
-    '&&': 'and',
-    '||': 'or'
-}
-
 function lexOpperators(source){
     var name,
         key;
 
     for(key in opperators){
         if(source.indexOf(key) === 0){
-            name = opperators[key];
+            name = key;
             break;
         }
     }

@@ -1,5 +1,5 @@
 {
-  "name": "music-lang",
+  "name": "presh",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -20,5 +20,8 @@
     "transform": [
       "brfs"
     ]
+  },
+  "devDependencies": {
+    "flat-merge": "^1.0.0"
   }
 }

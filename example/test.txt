@@ -1,7 +1,1 @@
-things(pluck scheduler){
-    scheduler.add((){
-        pluck();
-    });
-};
-
-things(sound('pluck.mp3') schedule(120));
+((x){ x + 10 / 10 + 10 + 10 - 5})(10)
