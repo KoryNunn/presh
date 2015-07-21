@@ -1,6 +1,6 @@
 var Scope = require('./scope'),
     toValue = require('./toValue'),
-    opperators = require('./opperators'),
+    operators = require('./operators'),
     toArray = function(list){return Array.prototype.slice.call(list);};
 
 var reservedKeywords = {
@@ -17,8 +17,8 @@ function functionCall(functionCall, scope){
     var fn = executeToken(functionCall.target, scope).value,
         result;
 
-    if(!fn){
-        throw 'bang';
+    if(typeof fn !== 'function'){
+        throw fn + ' is not a function';
     }
 
     return fn.apply(null, functionCall.arguments.map(function(argument, index){
@@ -41,20 +41,23 @@ function functionExpression(functionExpression, scope){
     };
 
     if(functionExpression.identifier){
-        scope.set(functionExpression.identifier, fn);
+        scope.set(functionExpression.identifier.name, fn);
     }
 
     return fn;
 }
 
-function turnary(turnary, scope){
-    return executeToken(turnary.condition, scope).value ? executeToken(turnary.left, scope).value : executeToken(turnary.right, scope).value;
+function ternary(ternary, scope){
+    return executeToken(ternary.left, scope).value ? executeToken(ternary.right.left, scope).value : executeToken(ternary.right.right, scope).value;
 }
 
 function identifier(identifier, scope){
     var name = identifier.name;
     if(name in reservedKeywords){
         return reservedKeywords[name];
+    }
+    if(!scope.isDefined(identifier.name)){
+        throw identifier.name + ' is not defined';
     }
     return scope.get(identifier.name);
 }
@@ -78,10 +81,10 @@ function period(period, scope){
 }
 
 function set(set, scope){
-    if(set.content.length === 1 && set.content[0].type === 'range'){
+    if(set.content.length === 1 && set.content[0].name === 'range'){
         var range = set.content[0],
-            start = executeToken(range.start, scope).value,
-            end = executeToken(range.end, scope).value,
+            start = executeToken(range.left, scope).value,
+            end = executeToken(range.right, scope).value,
             reverse = end < start,
             length = Math.abs(end - start),
             result = [];
@@ -98,20 +101,24 @@ function value(value, scope){
     return value.value;
 }
 
-function opperator(opperator, scope){
-    if(opperator.left){
-        return opperators[opperator.name](executeToken(opperator.left, scope).value, executeToken(opperator.right, scope).value);
+function operator(operator, scope){
+    if(operator.name in handlers){
+        return toValue(handlers[operator.name](operator, scope));
     }
 
-    return opperators[opperator.name](executeToken(opperator.right, scope).value);
+    if(operator.left){
+        return operators[operator.operator].fn(executeToken(operator.left, scope).value, executeToken(operator.right, scope).value);
+    }
+
+    return operators[operator.operator].fn(executeToken(operator.right, scope).value);
 }
 
-function parenthesisGroup(parenthesisGroup, scope){
+function contentHolder(parenthesisGroup, scope){
     return execute(parenthesisGroup.content, scope).value;
 }
 
 var handlers = {
-    turnary: turnary,
+    ternary: ternary,
     functionCall: functionCall,
     functionExpression: functionExpression,
     number: number,
@@ -120,8 +127,9 @@ var handlers = {
     set: set,
     period: period,
     value: value,
-    opperator: opperator,
-    parenthesisGroup: parenthesisGroup
+    operator: operator,
+    parenthesisGroup: contentHolder,
+    statement: contentHolder
 };
 
 function executeToken(token, scope){

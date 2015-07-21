@@ -1,4 +1,5 @@
-var ansi = require('ansi-styles');
+var ansi = require('ansi-styles'),
+    operators = require('./operators');
 
 function parseError(message, token){
     var start = token.index > 50 ? token.index - 50 : 0,
@@ -48,18 +49,34 @@ function findLastIndex(tokens, type){
 }
 
 function lastTokenMatches(ast, types, pop){
-    var lastToken = ast[ast.length - 1];
+    var lastToken = ast[ast.length - 1],
+        lastTokenType,
+        matched;
+
     if(!lastToken){
         return;
     }
-    for (var i = types.length-1; i >= 0; i--) {
-        if(types[i] === '*' || types[i] === lastToken.type){
-            if(pop){
-                ast.pop();
-            }
-            return lastToken;
+
+    lastTokenType = lastToken.type;
+
+    for (var i = types.length-1, type = types[i]; i >= 0; i--, type = types[i]) {
+        if(type === '!' + lastTokenType){
+            return;
+        }
+
+        if(type === '*' || type === lastTokenType){
+            matched = true;
         }
     }
+
+    if(!matched){
+        return;
+    }
+
+    if(pop){
+        ast.pop();
+    }
+    return lastToken;
 }
 
 function cleanDelimiters(tokens){
@@ -107,7 +124,8 @@ function parseParenthesis(tokens, ast) {
         return;
     }
 
-    var position = 0,
+    var openToken = tokens[0],
+        position = 0,
         opens = 1;
 
     while(++position, position <= tokens.length && opens){
@@ -124,7 +142,7 @@ function parseParenthesis(tokens, ast) {
 
     var content = parse(tokens.splice(0, position).slice(1,-1));
 
-    var target = lastTokenMatches(ast, ['*'], true),
+    var target = !openToken.delimiterPrefix && lastTokenMatches(ast, ['*', '!statement'], true),
         astNode;
 
     if(target){
@@ -149,7 +167,7 @@ function namedFunctionExpression(functionCall, content){
     return {
         type: 'functionExpression',
         identifier: functionCall.target,
-        parameters: functionCall.content,
+        parameters: functionCall.arguments,
         content: content
     };
 }
@@ -253,6 +271,9 @@ function parseSet(tokens, ast) {
 function parseDelimiters(tokens){
     if(tokens[0].type === 'delimiter'){
         tokens.splice(0,1);
+        if(tokens[0] && tokens[0].type === 'parenthesisOpen'){
+            tokens[0].delimiterPrefix = true;
+        }
         return true;
     }
 }
@@ -274,23 +295,51 @@ function parseComments(tokens, ast){
     return true;
 }
 
-function parseOpperator(tokens, ast){
-    if(tokens[0].type === 'opperator'){
-        var token = tokens.shift(),
-            right = parse(tokens, true);
-
-        if(right.length !== 1){
-            parseError('unexpected token.', right[0]);
-        }
-
+function parseOperator(tokens, ast){
+    if(tokens[0].type === 'operator'){
+        var token = tokens.shift();
         ast.push({
             type: token.type,
-            name: token.name,
-            left: ast.pop(),
-            right: right[0]
+            operator: token.name,
+            name: operators[token.name].name
         });
         return true;
     }
+}
+
+function findAll(array, fn){
+    var results = [];
+
+    for (var i = 0; i < array.length; i++) {
+        var result = fn(array[i], i);
+        if(result){
+            results.push(result);
+        }
+    }
+
+    return results;
+}
+
+function parseOperators(ast){
+    var operatorTokens = ast.filter(function(token, index){
+        return token.type === 'operator';
+    })
+    .sort(function(a,b){
+        return operators[b.operator].precedence - operators[a.operator].precedence
+    })
+    .map(function(token){
+        var index = ast.indexOf(token);
+
+        var left = ast.splice(index-1,1);
+        var right = ast.splice(index, 1);
+
+        if(left.length !== 1 || right.length !== 1){
+            parseError('unexpected token.', token);
+        }
+
+        token.left = left[0];
+        token.right = right[0];
+    });
 }
 
 function parsePeriod(tokens, ast){
@@ -332,9 +381,32 @@ function parseString(tokens, ast){
     }
 }
 
-function parseSemicolon(tokens){
+function parseSemicolon(tokens, ast){
     if(tokens[0].type === 'semicolon'){
         tokens.shift();
+        ast.push({
+            type: 'statement',
+            content: [ast.pop()]
+        });
+        return true;
+    }
+}
+
+function parseTernary(tokens, ast){
+    if(tokens[0].type === 'questionMark'){
+        var token = tokens.shift(),
+            content = parse(tokens, true);
+
+        if(content.length !== 1 || content[0].name !== ':'){
+            parseError('unexpected token.', content[0]);
+        }
+
+        ast.push({
+            type: 'ternary',
+            condition: ast.pop(),
+            right: content[0].right,
+            left: content[0].left
+        });
         return true;
     }
 }
@@ -349,7 +421,7 @@ var parsers = [
     parseSet,
     parseBlock,
     parsePeriod,
-    parseOpperator,
+    parseOperator,
     parseSemicolon
 ];
 
@@ -380,6 +452,8 @@ function parse(tokens, mutate){
     while(tokens.length){
         parseToken(tokens, ast);
     }
+
+    parseOperators(ast);
 
     return ast;
 }

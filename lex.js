@@ -1,4 +1,4 @@
-var opperators = require('./opperators');
+var operators = require('./operators');
 
 function lexString(source){
     var startChar = source.charAt(0);
@@ -30,7 +30,7 @@ function lexString(source){
 }
 
 function lexWord(source){
-    var match = source.match(/^[\w-%!\[\]=+^]+/);
+    var match = source.match(/^[\w-$]+/);
 
     if(!match){
         return;
@@ -138,11 +138,11 @@ function lexCharacters(source){
     };
 }
 
-function lexOpperators(source){
+function lexOperators(source){
     var name,
         key;
 
-    for(key in opperators){
+    for(key in operators){
         if(source.indexOf(key) === 0){
             name = key;
             break;
@@ -154,10 +154,10 @@ function lexOpperators(source){
     }
 
     return {
-        type: 'opperator',
+        type: 'operator',
         name: name,
         source: key,
-        length: 1
+        length: key.length
     };
 }
 
@@ -178,7 +178,7 @@ function lexDelimiter(source){
 var lexers = [
     lexDelimiter,
     lexComment,
-    lexOpperators,
+    lexOperators,
     lexCharacters,
     lexString,
     lexNumber,

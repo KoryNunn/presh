@@ -1,9 +1,15 @@
 var toValue = require('./toValue');
 
+function wrapScope(__scope__){
+    var scope = new Scope();
+    scope.__scope__ = __scope__;
+    return scope;
+}
+
 function Scope(oldScope){
     this.__scope__ = {};
     if(oldScope){
-        this.__outerScope__ = oldScope instanceof Scope ? oldScope : {__scope__:oldScope};
+        this.__outerScope__ = oldScope instanceof Scope ? oldScope : wrapScope(oldScope);
     }
 }
 Scope.prototype.get = function(key){

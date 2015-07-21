@@ -12,26 +12,15 @@ var parsed = parse(lexed);
 
 console.log(parsed);
 
-console.log(execute(parsed, merge(
+var x = execute(parsed, merge(
     global,
     {
         language: function(){
             return 'STUFF';
         }
     }
-)).value);
+)).value;
 
-var loops = 100000;
+window.x = x;
 
-console.time('loops');
-while(loops--){
-    execute(parsed, merge(
-        global,
-        {
-            language: function(){
-                return 'STUFF';
-            }
-        }
-    ))
-}
-console.timeEnd('loops');
+console.log(x);
