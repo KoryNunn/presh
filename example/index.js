@@ -1,26 +1,12 @@
-var lex = require('../lex'),
-    parse = require('../parse'),
-    execute = require('../execute'),
-    global = require('../global'),
-    merge = require('flat-merge');
-
+var presh = require('../');
 var fs = require('fs');
 
+var expression = fs.readFileSync(__dirname + '/test.txt').toString();
 
-var lexed = lex(fs.readFileSync(__dirname + '/test.txt').toString());
-var parsed = parse(lexed);
-
-console.log(parsed);
-
-var x = execute(parsed, merge(
-    global,
-    {
-        language: function(){
-            return 'STUFF';
-        }
+window.x = presh(expression, {
+    bar: {
+        baz: 'baz'
     }
-)).value;
-
-window.x = x;
+});
 
 console.log(x);

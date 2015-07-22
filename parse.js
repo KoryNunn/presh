@@ -115,7 +115,7 @@ function functionCall(target, content){
     return {
         type: 'functionCall',
         target: target,
-        arguments: content
+        content: content
     };
 }
 
@@ -140,9 +140,8 @@ function parseParenthesis(tokens, ast) {
         }
     }
 
-    var content = parse(tokens.splice(0, position).slice(1,-1));
-
     var target = !openToken.delimiterPrefix && lastTokenMatches(ast, ['*', '!statement'], true),
+        content = parse(tokens.splice(0, position).slice(1,-1)),
         astNode;
 
     if(target){
@@ -159,6 +158,16 @@ function parseParenthesis(tokens, ast) {
     return true;
 }
 
+function parseParameters(functionCall){
+    return functionCall.content.map(function(token){
+        if(token.type === 'identifier' || (token.name === 'spread' && token.right.type === 'identifier')){
+            return token;
+        }
+
+        parseError('Unexpected token in parameter list', functionCall);
+    });
+}
+
 function namedFunctionExpression(functionCall, content){
     if(functionCall.target.type !== 'identifier'){
         return false;
@@ -167,7 +176,7 @@ function namedFunctionExpression(functionCall, content){
     return {
         type: 'functionExpression',
         identifier: functionCall.target,
-        parameters: functionCall.arguments,
+        parameters: parseParameters(functionCall),
         content: content
     };
 }
@@ -175,7 +184,7 @@ function namedFunctionExpression(functionCall, content){
 function anonymousFunctionExpression(parenthesisGroup, content){
     return {
         type: 'functionExpression',
-        parameters: parenthesisGroup.content,
+        parameters: parseParameters(parenthesisGroup),
         content: content
     };
 }
@@ -232,7 +241,8 @@ function parseSet(tokens, ast) {
         return;
     }
 
-    var position = 0,
+    var openToken = tokens[0],
+        position = 0,
         opens = 1;
 
     while(++position, position <= tokens.length && opens){
@@ -247,12 +257,13 @@ function parseSet(tokens, ast) {
         }
     }
 
-    var content = parse(tokens.splice(0, position).slice(1,-1));
+    var target = !openToken.delimiterPrefix && lastTokenMatches(ast, ['*', '!statement', '!operator'], true),
+        content = parse(tokens.splice(0, position).slice(1,-1));
 
-    if(ast.length){
+    if(target){
         ast.push({
             type: 'accessor',
-            target: ast.pop(),
+            target: target,
             content: content
         });
 
@@ -271,7 +282,7 @@ function parseSet(tokens, ast) {
 function parseDelimiters(tokens){
     if(tokens[0].type === 'delimiter'){
         tokens.splice(0,1);
-        if(tokens[0] && tokens[0].type === 'parenthesisOpen'){
+        if(tokens[0]){
             tokens[0].delimiterPrefix = true;
         }
         return true;
@@ -279,20 +290,10 @@ function parseDelimiters(tokens){
 }
 
 function parseComments(tokens, ast){
-    if(tokens[0].type !== 'comment'){
-        return;
+    if(tokens[0].type === 'comment'){
+        tokens.shift();
+        return true;
     }
-
-    var comment = {
-        type: 'comment',
-        value: tokens[0].source.slice(2,-2)
-    };
-
-    tokens.splice(0,1);
-
-    ast.push(comment);
-
-    return true;
 }
 
 function parseOperator(tokens, ast){
@@ -300,8 +301,8 @@ function parseOperator(tokens, ast){
         var token = tokens.shift();
         ast.push({
             type: token.type,
-            operator: token.name,
-            name: operators[token.name].name
+            operator: token.source,
+            name: token.name
         });
         return true;
     }
@@ -318,57 +319,6 @@ function findAll(array, fn){
     }
 
     return results;
-}
-
-function parseOperators(ast){
-    var operatorTokens = ast.filter(function(token, index){
-        return token.type === 'operator';
-    })
-    .sort(function(a,b){
-        return operators[b.operator].precedence - operators[a.operator].precedence
-    })
-    .map(function(token){
-        var index = ast.indexOf(token);
-
-        var left = ast.splice(index-1,1);
-        var right = ast.splice(index, 1);
-
-        if(left.length !== 1 || right.length !== 1){
-            parseError('unexpected token.', token);
-        }
-
-        token.left = left[0];
-        token.right = right[0];
-    });
-}
-
-function parsePeriod(tokens, ast){
-    if(tokens[0].name === 'period'){
-        tokens.shift();
-
-        var token = {
-                type: 'period'
-            };
-
-        if(tokens[0] && tokens[0].type === 'period'){
-            tokens.shift();
-            token.type = 'range';
-        }
-
-        var right = parseToken(tokens);
-
-        if(token.type === 'range'){
-            token.type = 'range';
-            token.start = ast.pop();
-            token.end = right.pop();
-        }else{
-            token.target = ast.pop();
-            token.identifier = right.pop();
-        }
-
-        ast.push(token);
-        return true;
-    }
 }
 
 function parseString(tokens, ast){
@@ -392,25 +342,6 @@ function parseSemicolon(tokens, ast){
     }
 }
 
-function parseTernary(tokens, ast){
-    if(tokens[0].type === 'questionMark'){
-        var token = tokens.shift(),
-            content = parse(tokens, true);
-
-        if(content.length !== 1 || content[0].name !== ':'){
-            parseError('unexpected token.', content[0]);
-        }
-
-        ast.push({
-            type: 'ternary',
-            condition: ast.pop(),
-            right: content[0].right,
-            left: content[0].left
-        });
-        return true;
-    }
-}
-
 var parsers = [
     parseDelimiters,
     parseComments,
@@ -420,10 +351,44 @@ var parsers = [
     parseParenthesis,
     parseSet,
     parseBlock,
-    parsePeriod,
     parseOperator,
     parseSemicolon
 ];
+
+function parseOperators(ast){
+    var operatorTokens = ast.filter(function(token, index){
+        return token.type === 'operator';
+    })
+    .sort(function(a,b){
+        return operators[b.operator].precedence - operators[a.operator].precedence
+    })
+    .map(function(token){
+        var index = ast.indexOf(token),
+            operator = operators[token.operator],
+            left,
+            right;
+
+        if(operator.unary === 'left'){
+            left = ast.splice(index-1,1);
+        }else if(operator.unary === 'right'){
+            right = ast.splice(index + 1,1);
+        }else{
+            left = ast.splice(index-1,1);
+            right = ast.splice(index, 1);
+        }
+
+        if(left && left.length !== 1 || right && right.length !== 1){
+            parseError('unexpected token.', token);
+        }
+
+        if(left){
+            token.left = left[0];
+        }
+        if(right){
+            token.right = right[0];
+        }
+    });
+}
 
 function parseToken(tokens, ast){
     if(!ast){

@@ -139,25 +139,39 @@ function lexCharacters(source){
 }
 
 function lexOperators(source){
-    var name,
+    var operator,
         key;
 
     for(key in operators){
         if(source.indexOf(key) === 0){
-            name = key;
+            operator = operators[key];
             break;
         }
     }
 
-    if(!name){
+    if(!operator){
         return;
     }
 
     return {
         type: 'operator',
-        name: name,
+        name: operator.name,
         source: key,
         length: key.length
+    };
+}
+
+function lexSpread(source){
+    var match = source.match(/^\.\.\./);
+
+    if(!match){
+        return;
+    }
+
+    return {
+        type: 'spread',
+        source: match[0],
+        length: match[0].length
     };
 }
 
@@ -182,7 +196,8 @@ var lexers = [
     lexCharacters,
     lexString,
     lexNumber,
-    lexWord
+    lexWord,
+    lexSpread
 ];
 
 function scanForToken(tokenisers, expression){

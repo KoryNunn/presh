@@ -1,4 +1,9 @@
 module.exports = {
+    '...': {
+        name: 'spread',
+        unary: 'right',
+        precedence: 19
+    },
     '..': {
         name: 'range',
         precedence: 19
@@ -124,6 +129,7 @@ module.exports = {
             return !a;
         },
         name: 'not',
+        unary: 'right',
         precedence: 15
     },
     '&': {
@@ -148,10 +154,11 @@ module.exports = {
         precedence: 7
     },
     '~': {
-        fn: function(a, b){
+        fn: function(a){
             return ~a;
         },
         name: 'bitwiseNot',
+        unary: 'right',
         precedence: 15
     },
     'typeof': {
@@ -159,6 +166,7 @@ module.exports = {
             return typeof a;
         },
         name: 'typeof',
+        unary: 'right',
         precedence: 15
     },
     '<<': {

@@ -1,3 +1,7 @@
-double(x){x*2}
+sum(...args){
+    fold(args (result x){
+        result + x
+    })
+}
 
-map([0..1000] double)
+sum(...[0..99])

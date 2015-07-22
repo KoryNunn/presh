@@ -13,6 +13,22 @@ function lessThan(lessThan, scope){
     return executeToken(lessThan.left, scope).value < executeToken(lessThan.right, scope).value;
 }
 
+function resolveSpreads(content, scope){
+    var result = [];
+
+    content.forEach(function(token){
+
+        if(token.name === 'spread'){
+            result.push.apply(result, executeToken(token, scope).value);
+            return;
+        }
+
+        result.push(executeToken(token, scope).value);
+    });
+
+    return result;
+}
+
 function functionCall(functionCall, scope){
     var fn = executeToken(functionCall.target, scope).value,
         result;
@@ -21,20 +37,22 @@ function functionCall(functionCall, scope){
         throw fn + ' is not a function';
     }
 
-    return fn.apply(null, functionCall.arguments.map(function(argument, index){
-        return executeToken(argument, scope).value;
-    }));
+    return fn.apply(null, resolveSpreads(functionCall.content, scope));
 }
 
 function functionExpression(functionExpression, scope){
     var fn = function(){
-        var functionScope = new Scope(scope);
+        var args = arguments,
+            functionScope = new Scope(scope);
 
-        toArray(arguments).forEach(function(argument, index){
-            if(functionExpression.parameters.length <= index){
+        functionExpression.parameters.forEach(function(parameter, index){
+
+            if(parameter.name === 'spread'){
+                functionScope.set(parameter.right.name, Array.prototype.slice.call(args, index));
                 return;
             }
-            functionScope.set(functionExpression.parameters[index].name, argument);
+
+            functionScope.set(parameter.name, args[index]);
         });
 
         return execute(functionExpression.content, functionScope).value;
@@ -56,10 +74,10 @@ function identifier(identifier, scope){
     if(name in reservedKeywords){
         return reservedKeywords[name];
     }
-    if(!scope.isDefined(identifier.name)){
-        throw identifier.name + ' is not defined';
+    if(!scope.isDefined(name)){
+        throw name + ' is not defined';
     }
-    return scope.get(identifier.name);
+    return scope.get(name);
 }
 
 function number(number, scope){
@@ -71,13 +89,34 @@ function string(string, scope){
 }
 
 function period(period, scope){
-    var target = executeToken(period.target, scope).value;
+    var target = executeToken(period.left, scope).value;
 
     if(!target || !(typeof target === 'object' || typeof target === 'function')){
         throw 'target is not an object';
     }
 
-    return target[period.identifier.name];
+    return target[period.right.name];
+}
+
+function spread(spread, scope){
+    var target = executeToken(spread.right, scope).value;
+
+    if(!Array.isArray(target)){
+        throw 'target did not resolve to an array';
+    }
+
+    return target;
+}
+
+function accessor(accessor, scope){
+    var accessorValue = execute(accessor.content, scope).value,
+        target = executeToken(accessor.target, scope).value;
+
+    if(!target || !(typeof target === 'object' || typeof target === 'function')){
+        throw 'target is not an object';
+    }
+
+    return target[accessorValue];
 }
 
 function set(set, scope){
@@ -92,9 +131,10 @@ function set(set, scope){
         for (var i = start; reverse ? i >= end : i <= end; reverse ? i-- : i++) {
             result.push(i);
         };
+        return result;
     }
 
-    return result;
+    return resolveSpreads(set.content, scope);
 }
 
 function value(value, scope){
@@ -126,6 +166,8 @@ var handlers = {
     identifier: identifier,
     set: set,
     period: period,
+    spread: spread,
+    accessor: accessor,
     value: value,
     operator: operator,
     parenthesisGroup: contentHolder,
