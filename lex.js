@@ -30,7 +30,7 @@ function lexString(source){
 }
 
 function lexWord(source){
-    var match = source.match(/^[\w-$]+/);
+    var match = source.match(/^(?!\-)[\w-$]+/);
 
     if(!match){
         return;
@@ -46,9 +46,7 @@ function lexWord(source){
 function lexNumber(source){
     var specials = {
         "NaN": Number.NaN,
-        "-NaN": -Number.NaN,
-        "Infinity": Infinity,
-        "-Infinity": -Infinity
+        "Infinity": Infinity
     };
 
     var token = {
@@ -64,7 +62,7 @@ function lexNumber(source){
         }
     }
 
-    var matchExponent = source.match(/^-?[0-9]+(?:\.[0-9]+)?[eE]-?[0-9]+/);
+    var matchExponent = source.match(/^[0-9]+(?:\.[0-9]+)?[eE]-?[0-9]+/);
 
     if(matchExponent){
         token.source = matchExponent[0];
@@ -73,7 +71,7 @@ function lexNumber(source){
         return token;
     }
 
-    var matchHex = source.match(/^-?0[xX][0-9]+/);
+    var matchHex = source.match(/^0[xX][0-9]+/);
 
     if(matchHex){
         token.source = matchHex[0];
@@ -82,7 +80,16 @@ function lexNumber(source){
         return token;
     }
 
-    var matchNormalDecimal = source.match(/^-?[0-9]+(?:\.[0-9]+)?/);
+    var matchHeadlessDecimal = source.match(/^\.[0-9]+/);
+
+    if(matchHeadlessDecimal){
+        token.source = matchHeadlessDecimal[0];
+        token.length = token.source.length;
+
+        return token;
+    }
+
+    var matchNormalDecimal = source.match(/^[0-9]+(?:\.[0-9]+)?/);
 
     if(matchNormalDecimal){
         token.source = matchNormalDecimal[0];
@@ -155,7 +162,6 @@ function lexOperators(source){
 
     return {
         type: 'operator',
-        name: operator.name,
         source: key,
         length: key.length
     };
@@ -192,10 +198,10 @@ function lexDelimiter(source){
 var lexers = [
     lexDelimiter,
     lexComment,
+    lexNumber,
     lexOperators,
     lexCharacters,
     lexString,
-    lexNumber,
     lexWord,
     lexSpread
 ];

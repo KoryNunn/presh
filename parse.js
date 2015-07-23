@@ -298,13 +298,38 @@ function parseComments(tokens, ast){
 
 function parseOperator(tokens, ast){
     if(tokens[0].type === 'operator'){
-        var token = tokens.shift();
-        ast.push({
-            type: token.type,
-            operator: token.source,
-            name: token.name
-        });
-        return true;
+        var token = tokens.shift(),
+            operatorsForSource = operators[token.source],
+            startOfStatement = !lastTokenMatches(ast, ['*', '!statement', '!operator']);
+
+        if(operatorsForSource.binary && !startOfStatement){
+            ast.push({
+                type: 'operator',
+                name: operatorsForSource.binary.name,
+                operator: operatorsForSource.binary
+            });
+            return true;
+        }
+
+        if(operatorsForSource.unary){
+            ast.push({
+                type: 'operator',
+                name: operatorsForSource.unary.name,
+                operator: operatorsForSource.unary
+            });
+            return true;
+        }
+
+        if(operatorsForSource.trinary && !startOfStatement){
+            ast.push({
+                type: 'operator',
+                name: operatorsForSource.trinary.name,
+                operator: operatorsForSource.trinary
+            });
+            return true;
+        }
+
+        parseError('Unexpected token', token);
     }
 }
 
@@ -360,29 +385,54 @@ function parseOperators(ast){
         return token.type === 'operator';
     })
     .sort(function(a,b){
-        return operators[b.operator].precedence - operators[a.operator].precedence
+        if(a.operator.precedence === b.operator.precedence && a.operator.associativity === 'right'){
+            return 1;
+        }
+
+        return b.operator.precedence - a.operator.precedence;
     })
-    .map(function(token){
+    .forEach(function(token){
         var index = ast.indexOf(token),
-            operator = operators[token.operator],
+            operator = token.operator,
             left,
+            middle,
             right;
 
-        if(operator.unary === 'left'){
+        // Token was parsed by some other parser step.
+        if(!~index){
+            return;
+        }
+
+        if(operator.trinary){
             left = ast.splice(index-1,1);
-        }else if(operator.unary === 'right'){
+            middle = ast.splice(index,1);
+            var trinary = ast.splice(index,1);
+            right = ast.splice(index,1);
+            if(!trinary.length || trinary[0].name !== operator.trinary){
+                parseError('Unexpected token.', token);
+            }
+        }else if(operator.direction === 'left'){
+            left = ast.splice(index-1,1);
+        }else if(operator.direction === 'right'){
             right = ast.splice(index + 1,1);
         }else{
             left = ast.splice(index-1,1);
             right = ast.splice(index, 1);
         }
 
-        if(left && left.length !== 1 || right && right.length !== 1){
+        if(
+            left && left.length !== 1 ||
+            middle && middle.length !== 1 ||
+            right && right.length !== 1
+        ){
             parseError('unexpected token.', token);
         }
 
         if(left){
             token.left = left[0];
+        }
+        if(middle){
+            token.middle = middle[0];
         }
         if(right){
             token.right = right[0];

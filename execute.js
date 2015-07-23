@@ -6,7 +6,8 @@ var Scope = require('./scope'),
 var reservedKeywords = {
     'true': true,
     'false': false,
-    'null': null
+    'null': null,
+    'undefined': undefined
 };
 
 function lessThan(lessThan, scope){
@@ -66,7 +67,12 @@ function functionExpression(functionExpression, scope){
 }
 
 function ternary(ternary, scope){
-    return executeToken(ternary.left, scope).value ? executeToken(ternary.right.left, scope).value : executeToken(ternary.right.right, scope).value;
+
+    if(scope._debug){
+        console.log('Executing operator: ' + operator.name, operator.left, operator.right);
+    }
+
+    return executeToken(ternary.left, scope).value ? executeToken(ternary.middle, scope).value : executeToken(ternary.right, scope).value;
 }
 
 function identifier(identifier, scope){
@@ -147,10 +153,16 @@ function operator(operator, scope){
     }
 
     if(operator.left){
-        return operators[operator.operator].fn(executeToken(operator.left, scope).value, executeToken(operator.right, scope).value);
+        if(scope._debug){
+            console.log('Executing operator: ' + operator.name, operator.left, operator.right);
+        }
+        return operator.operator.fn(executeToken(operator.left, scope).value, executeToken(operator.right, scope).value);
     }
 
-    return operators[operator.operator].fn(executeToken(operator.right, scope).value);
+    if(scope._debug){
+        console.log('Executing operator: ' + operator.name. operator.right);
+    }
+    return operator.operator.fn(executeToken(operator.right, scope).value);
 }
 
 function contentHolder(parenthesisGroup, scope){
@@ -178,8 +190,10 @@ function executeToken(token, scope){
     return toValue(handlers[token.type](token, scope));
 }
 
-function execute(tokens, scope){
+function execute(tokens, scope, debug){
     var scope = scope instanceof Scope ? scope : new Scope(scope);
+
+    scope._debug = debug;
 
     return tokens.map(function(token){
         return executeToken(token, scope);

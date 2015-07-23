@@ -7,6 +7,6 @@ window.x = presh(expression, {
     bar: {
         baz: 'baz'
     }
-});
+}, true);
 
 console.log(x);

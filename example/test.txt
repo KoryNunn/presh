@@ -1,7 +1,1 @@
-sum(...args){
-    fold(args (result x){
-        result + x
-    })
-}
-
-sum(...[0..99])
+true ? false ? 'first' : 'second' : 'third'

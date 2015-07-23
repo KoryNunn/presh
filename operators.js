@@ -1,201 +1,279 @@
 module.exports = {
     '...': {
-        name: 'spread',
-        unary: 'right',
-        precedence: 19
+        unary: {
+            name: 'spread',
+            direction: 'right',
+            precedence: 19
+        }
     },
     '..': {
-        name: 'range',
-        precedence: 19
+        binary: {
+            name: 'range',
+            precedence: 3
+        }
     },
     '.': {
-        name: 'period',
-        precedence: 18
+        binary: {
+            name: 'period',
+            precedence: 18
+        }
     },
     '+': {
-        fn: function(a, b){
-            return a + b;
+        binary: {
+            name: 'add',
+            fn: function(a, b) {
+                return a + b;
+            },
+            precedence: 13
         },
-        name: 'add',
-        precedence: 13
+        unary:{
+            name: 'positive',
+            direction: 'right',
+            fn: function(a) {
+                return +a;
+            },
+            precedence: 15
+        }
     },
     '-': {
-        fn: function(a, b){
-            return a - b;
+        binary: {
+            name: 'subtract',
+            fn: function(a, b) {
+                return a - b;
+            },
+            precedence: 13
         },
-        name: 'subtract',
-        precedence: 13
+        unary:{
+            name: 'negative',
+            direction: 'right',
+            fn: function(a) {
+                return -a;
+            },
+            precedence: 15
+        }
     },
     '*': {
-        fn: function(a, b){
-            return a * b;
-        },
-        name: 'multiply',
-        precedence: 14
+        binary: {
+            name: 'multiply',
+            fn: function(a, b) {
+                return a * b;
+            },
+            precedence: 14
+        }
     },
     '/': {
-        fn: function(a, b){
-            return a / b;
-        },
-        name: 'divide',
-        precedence: 14
+        binary: {
+            name: 'divide',
+            fn: function(a, b) {
+                return a / b;
+            },
+            precedence: 14
+        }
     },
     '%': {
-        fn: function(a, b){
-            return a % b;
-        },
-        name: 'remainder',
-        precedence: 14
+        binary: {
+            name: 'remainder',
+            fn: function(a, b) {
+                return a % b;
+            },
+            precedence: 14
+        }
     },
     'in': {
-        fn: function(a, b){
-            return a in b;
-        },
-        name: 'in',
-        precedence: 11
-    },
-    '==': {
-        fn: function(a, b){
-            return a == b;
-        },
-        name: 'equal',
-        precedence: 10
-    },
-    '!=': {
-        fn: function(a, b){
-            return a != b;
-        },
-        name: 'notEqual',
-        precedence: 10
+        binary: {
+            name: 'in',
+            fn: function(a, b) {
+                return a in b;
+            },
+            precedence: 11
+        }
     },
     '===': {
-        fn: function(a, b){
-            return a === b;
-        },
-        name: 'exactlyEqual',
-        precedence: 10
+        binary: {
+            name: 'exactlyEqual',
+            fn: function(a, b) {
+                return a === b;
+            },
+            precedence: 10
+        }
     },
     '!==': {
-        fn: function(a, b){
-            return a !== b;
-        },
-        name: 'netExactlyEqual',
-        precedence: 10
+        binary: {
+            name: 'netExactlyEqual',
+            fn: function(a, b) {
+                return a !== b;
+            },
+            precedence: 10
+        }
     },
-    '>': {
-        fn: function(a, b){
-            return a > b;
-        },
-        name: 'greaterThan',
-        precedence: 11
+    '==': {
+        binary: {
+            name: 'equal',
+            fn: function(a, b) {
+                return a == b;
+            },
+            precedence: 10
+        }
     },
-    '<': {
-        fn: function(a, b){
-            return a < b;
-        },
-        name: 'lessThan',
-        precedence: 11
+    '!=': {
+        binary: {
+            name: 'notEqual',
+            fn: function(a, b) {
+                return a != b;
+            },
+            precedence: 10
+        }
     },
     '>=': {
-        fn: function(a, b){
-            return a >= b;
-        },
-        name: 'greaterThanOrEqual',
-        precedence: 11
+        binary: {
+            name: 'greaterThanOrEqual',
+            fn: function(a, b) {
+                return a >= b;
+            },
+            precedence: 11
+        }
     },
     '<=': {
-        fn: function(a, b){
-            return a <= b;
-        },
-        name: 'lessThanOrEqual',
-        precedence: 11
+        binary: {
+            name: 'lessThanOrEqual',
+            fn: function(a, b) {
+                return a <= b;
+            },
+            precedence: 11
+        }
+    },
+    '>': {
+        binary: {
+            name: 'greaterThan',
+            fn: function(a, b) {
+                return a > b;
+            },
+            precedence: 11
+        }
+    },
+    '<': {
+        binary: {
+            name: 'lessThan',
+            fn: function(a, b) {
+                return a < b;
+            },
+            precedence: 11
+        }
     },
     '&&': {
-        fn: function(a, b){
-            return a && b;
-        },
-        name: 'and',
-        precedence: 6
+        binary: {
+            name: 'and',
+            fn: function(a, b) {
+                return a && b;
+            },
+            precedence: 6
+        }
     },
     '||': {
-        fn: function(a, b){
-            return a || b;
-        },
-        name: 'or',
-        precedence: 5
+        binary: {
+            name: 'or',
+            fn: function(a, b) {
+                return a || b;
+            },
+            precedence: 5
+        }
     },
     '!': {
-        fn: function(a){
-            return !a;
-        },
-        name: 'not',
-        unary: 'right',
-        precedence: 15
+        unary: {
+            name: 'not',
+            direction: 'right',
+            fn: function(a) {
+                return !a;
+            },
+            precedence: 15
+        }
     },
     '&': {
-        fn: function(a, b){
-            return a & b;
-        },
-        name: 'bitwiseAnd',
-        precedence: 9
+        binary: {
+            name: 'bitwiseAnd',
+            fn: function(a, b) {
+                return a & b;
+            },
+            precedence: 9
+        }
     },
     '^': {
-        fn: function(a, b){
-            return a ^ b;
-        },
-        name: 'bitwiseXOr',
-        precedence: 8
+        binary: {
+            name: 'bitwiseXOr',
+            fn: function(a, b) {
+                return a ^ b;
+            },
+            precedence: 8
+        }
     },
     '|': {
-        fn: function(a, b){
-            return a | b;
-        },
-        name: 'bitwiseOr',
-        precedence: 7
+        binary: {
+            name: 'bitwiseOr',
+            fn: function(a, b) {
+                return a | b;
+            },
+            precedence: 7
+        }
     },
     '~': {
-        fn: function(a){
-            return ~a;
-        },
-        name: 'bitwiseNot',
-        unary: 'right',
-        precedence: 15
+        unary: {
+            name: 'bitwiseNot',
+            direction: 'right',
+            fn: function(a) {
+                return ~a;
+            },
+            precedence: 15
+        }
     },
     'typeof': {
-        fn: function(a){
-            return typeof a;
-        },
-        name: 'typeof',
-        unary: 'right',
-        precedence: 15
+        unary: {
+            name: 'typeof',
+            direction: 'right',
+            fn: function(a) {
+                return typeof a;
+            },
+            precedence: 15
+        }
     },
     '<<': {
-        fn: function(a, b){
-            return a << b;
-        },
-        name: 'bitwiseLeftShift',
-        precedence: 12
+        binary: {
+            name: 'bitwiseLeftShift',
+            fn: function(a, b) {
+                return a << b;
+            },
+            precedence: 12
+        }
     },
     '>>': {
-        fn: function(a, b){
-            return a >> b;
-        },
-        name: 'bitwiseRightShift',
-        precedence: 12
+        binary: {
+            name: 'bitwiseRightShift',
+            fn: function(a, b) {
+                return a >> b;
+            },
+            precedence: 12
+        }
     },
     '>>>': {
-        fn: function(a, b){
-            return a >>> b;
-        },
-        name: 'bitwiseUnsignedRightShift',
-        precedence: 12
-    },
-    ':': {
-        name: 'tuple',
-        precedence: 4
+        binary: {
+            name: 'bitwiseUnsignedRightShift',
+            fn: function(a, b) {
+                return a >>> b;
+            },
+            precedence: 12
+        }
     },
     '?': {
-        name: 'ternary',
-        precedence: 3
+        trinary: {
+            name: 'ternary',
+            trinary: 'tuple',
+            associativity: 'right',
+            precedence: 4
+        }
+    },
+    ':': {
+        binary: {
+            name: 'tuple',
+            precedence: 3
+        }
     }
 };
