@@ -1,5 +1,11 @@
 var v = {};
-module.exports = function toValue(value){
+module.exports = function toValue(value, scope){
+    if(scope._error){
+        return {
+            error: scope._error
+        };
+    }
+
     if(value && value._value === v){
         return value;
     }

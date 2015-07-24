@@ -34,11 +34,12 @@ function testExpression(name, expression, scope, expected, comparitor){
         });
 
         if(comparitor){
-            t.ok(comparitor(result, expected));
+            t.ok(comparitor(result.value, expected));
             return;
         }
 
-        t.deepEqual(result, expected);
+        t.deepEqual(result.value, expected);
+
     });
 }
 
@@ -141,3 +142,18 @@ testExpression('Named expression 2', 'foo(x){x} bar(fn){fn("world")} bar(foo)', 
 
 testExpression('Spread apply', '(a b c){a + b + c}(...[0..2])', 3);
 testExpression('Spread concat', '[1 2 3 ...[4..6]]', [1, 2, 3, 4, 5, 6]);
+
+
+
+test('errors', function(t){
+    t.plan(2);
+
+    var result = presh('foo.things; fail()', {
+        fail:function(){
+            t.fail();
+        }
+    });
+
+    t.ok(result.error);
+    t.notOk(result.value);
+});

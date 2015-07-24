@@ -14,7 +14,7 @@ Ranges.
 
 ## usage
 
-presh(expression, scope);
+result = presh(expression, scope);
 
 ```
     var presh = require('presh');
@@ -22,6 +22,16 @@ presh(expression, scope);
     var result = presh('2 + thing', {
         thing: 4
     });
+
+    if(result.error){
+        // If the expression execution errored
+
+        console.log(result.error);
+    }else{
+        // The expression executed without error.
+
+        console.log(result.value);
+    }
 
 ```
 

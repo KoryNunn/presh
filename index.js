@@ -4,14 +4,12 @@ var lex = require('./lex'),
     global = require('./global'),
     merge = require('flat-merge');
 
-module.exports = function(expression, scope, debug){
+module.exports = function(expression, scope, callback, debug){
     var lexed = lex(expression);
     var parsed = parse(lexed);
 
-    var result = execute(parsed, merge(
+    return execute(parsed, merge(
         global,
         scope
-    ), debug);
-
-    return result.value;
+    ), callback, debug);
 };

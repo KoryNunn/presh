@@ -6,19 +6,24 @@ function wrapScope(__scope__){
     return scope;
 }
 
-function Scope(oldScope){
+function Scope(oldScope, debug){
     this.__scope__ = {};
+    this._debug = debug;
     if(oldScope){
         this.__outerScope__ = oldScope instanceof Scope ? oldScope : wrapScope(oldScope);
         this._debug = this.__outerScope__._debug;
     }
 }
+Scope.prototype.throw = function(message){
+    this._error = new Error('Presh execution error: ' + message);
+    this._error.scope = this;
+};
 Scope.prototype.get = function(key){
     var scope = this;
     while(scope && !scope.__scope__.hasOwnProperty(key)){
         scope = scope.__outerScope__;
     }
-    return scope && toValue.value(scope.__scope__[key]);
+    return scope && toValue.value(scope.__scope__[key], this);
 };
 Scope.prototype.set = function(key, value, bubble){
     if(bubble){
@@ -31,12 +36,12 @@ Scope.prototype.set = function(key, value, bubble){
             currentScope.set(key, value);
         }
     }
-    this.__scope__[key] = toValue(value);
+    this.__scope__[key] = toValue(value, this);
     return this;
 };
 Scope.prototype.define = function(obj){
     for(var key in obj){
-        this.__scope__[key] = toValue(obj[key]);
+        this.__scope__[key] = toValue(obj[key], this);
     }
     return this;
 };

@@ -35,7 +35,7 @@ function functionCall(functionCall, scope){
         result;
 
     if(typeof fn !== 'function'){
-        throw fn + ' is not a function';
+        scope.throw(fn + ' is not a function');
     }
 
     return fn.apply(null, resolveSpreads(functionCall.content, scope));
@@ -81,7 +81,7 @@ function identifier(identifier, scope){
         return reservedKeywords[name];
     }
     if(!scope.isDefined(name)){
-        throw name + ' is not defined';
+        scope.throw(name + ' is not defined');
     }
     return scope.get(name);
 }
@@ -98,7 +98,8 @@ function period(period, scope){
     var target = executeToken(period.left, scope).value;
 
     if(!target || !(typeof target === 'object' || typeof target === 'function')){
-        throw 'target is not an object';
+        scope.throw('target is not an object');
+        return;
     }
 
     return target[period.right.name];
@@ -108,7 +109,7 @@ function spread(spread, scope){
     var target = executeToken(spread.right, scope).value;
 
     if(!Array.isArray(target)){
-        throw 'target did not resolve to an array';
+        scope.throw('target did not resolve to an array');
     }
 
     return target;
@@ -119,7 +120,7 @@ function accessor(accessor, scope){
         target = executeToken(accessor.target, scope).value;
 
     if(!target || !(typeof target === 'object' || typeof target === 'function')){
-        throw 'target is not an object';
+        scope.throw('target is not an object');
     }
 
     return target[accessorValue];
@@ -149,7 +150,7 @@ function value(value, scope){
 
 function operator(operator, scope){
     if(operator.name in handlers){
-        return toValue(handlers[operator.name](operator, scope));
+        return toValue(handlers[operator.name](operator, scope), scope);
     }
 
     if(operator.left){
@@ -187,17 +188,32 @@ var handlers = {
 };
 
 function executeToken(token, scope){
-    return toValue(handlers[token.type](token, scope));
+    if(scope._error){
+        return {error: scope._error}
+    }
+    return toValue(handlers[token.type](token, scope), scope);
 }
 
 function execute(tokens, scope, debug){
-    var scope = scope instanceof Scope ? scope : new Scope(scope);
+    var scope = scope instanceof Scope ? scope : new Scope(scope, debug);
 
-    scope._debug = debug;
+    var result;
+    for (var i = 0; i < tokens.length; i++) {
 
-    return tokens.map(function(token){
-        return executeToken(token, scope);
-    }).pop();
+        result = executeToken(tokens[i], scope);
+
+        if(result.error){
+            return result;
+        }
+    }
+
+    if(!result){
+        return {
+            error: new Error('Unknown execution error')
+        };
+    }
+
+    return result;
 }
 
 module.exports = execute;

@@ -1,1 +1,0 @@
-true ? false ? 'first' : 'second' : 'third'
