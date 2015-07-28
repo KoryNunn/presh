@@ -1,19 +1,23 @@
-var ansi = require('ansi-styles'),
-    operators = require('./operators');
+var operators = require('./operators'),
+    template = require('string-template'),
+    errorTemplate = 'Parse error,\n{message},\nAt {index} "{snippet}"',
+    snippetTemplate = '-->{0}<--';
 
 function parseError(message, token){
-    var start = token.index > 50 ? token.index - 50 : 0,
-        errorIndex = token.index > 50 ? 50 : token.index,
+    var start = Math.max(token.index - 50, 0),
+        errorIndex = Math.min(50, token.index),
         surroundingSource = token.sourceRef.source.slice(start, token.index + 50),
-        errorMessage = 'Parse error, ' + message + '\n' +
-        'At ' + token.index + '\n"' +
-        (start === 0 ? '' : '...\n') +
-        surroundingSource.slice(0, errorIndex) +
-        (global.window ? '-->' : ansi.red.open) +
-        surroundingSource.slice(errorIndex, errorIndex+1) +
-        (global.window ? '<--' : ansi.red.close) +
-        surroundingSource.slice(errorIndex + 1) + '' +
-        (surroundingSource.length < 100 ? '' : '...') + '"';
+        errorMessage = template(errorTemplate, {
+            message: message,
+            index: token.index,
+            snippet: [
+                (start === 0 ? '' : '...\n'),
+                surroundingSource.slice(0, errorIndex),
+                template(snippetTemplate, surroundingSource.slice(errorIndex, errorIndex+1)),
+                surroundingSource.slice(errorIndex + 1) + '',
+                (surroundingSource.length < 100 ? '' : '...')
+            ].join('')
+        });
 
     throw errorMessage;
 }

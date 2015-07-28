@@ -10,13 +10,6 @@
   },
   "author": "",
   "license": "ISC",
-  "dependencies": {
-    "ansi-styles": "^2.0.1",
-    "audio-clock": "^0.2.0",
-    "brfs": "^1.4.0",
-    "simple-ajax": "^2.1.0",
-    "webworkify": "^1.0.2"
-  },
   "browserify": {
     "transform": [
       "brfs"
@@ -24,7 +17,10 @@
   },
   "devDependencies": {
     "deep-equal": "^1.0.0",
-    "flat-merge": "^1.0.0",
     "same-value": "^1.0.0"
+  },
+  "dependencies": {
+    "flat-merge": "^1.0.0",
+    "string-template": "^0.2.1"
   }
 }
