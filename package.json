@@ -10,11 +10,6 @@
   },
   "author": "",
   "license": "ISC",
-  "browserify": {
-    "transform": [
-      "brfs"
-    ]
-  },
   "devDependencies": {
     "deep-equal": "^1.0.0",
     "same-value": "^1.0.0"
