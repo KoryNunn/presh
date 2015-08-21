@@ -11,7 +11,7 @@ function functionallyIdentical(tester){
         // console.log(resultA, resultB);
 
         if(resultA && typeof resultA === 'object'){
-            return deepEqual(resultA, resultB)
+            return deepEqual(resultA, resultB);
         }
         return sameValue(resultA, resultB);
     };
@@ -27,7 +27,7 @@ function testExpression(name, expression, scope, expected, comparitor){
     test(name, function(t){
         t.plan(1);
 
-        var result = presh(expression, {
+        var result = presh(expression, scope || {
             bar: {
                 baz: 'baz'
             }
@@ -51,8 +51,8 @@ testExpression('Numbers: 1', '1', 1);
 testExpression('Numbers: -1', '-1', -1);
 testExpression('Numbers: 1.1', '1.1', 1.1);
 testExpression('Numbers: -1.1', '-1.1', -1.1);
-testExpression('Numbers: .1', '.1', .1);
-testExpression('Numbers: -.1', '-.1', -.1);
+testExpression('Numbers: .1', '.1', 0.1);
+testExpression('Numbers: -.1', '-.1', -0.1);
 testExpression('Numbers: 1e10', '1e10', 1e10);
 testExpression('Numbers: -1e10', '-1e10', -1e10);
 testExpression('Numbers: NaN', 'NaN', NaN, sameValue);
@@ -115,13 +115,13 @@ testExpression('Spread negatives reverse', '[2..-2]', [2, 1, 0, -1, -2]);
 testExpression('Spread non-number', '[(0)..2]', [0, 1, 2]);
 testExpression('Spread complex', '(a){[a..a*2]}(3)', [3, 4, 5, 6]);
 
-testExpression('Expression 1', '(x){x}', function(x){return x}, functionallyIdentical(function(fn){
+testExpression('Expression 1', '(x){x}', function(x){return x;}, functionallyIdentical(function(fn){
     return fn(1);
 }));
-testExpression('Expression 2', '(x){x + 1}', function(x){return x+1}, functionallyIdentical(function(fn){
+testExpression('Expression 2', '(x){x + 1}', function(x){return x+1;}, functionallyIdentical(function(fn){
     return fn(1);
 }));
-testExpression('Expression  3', '(a b){a + b}', function(a, b){return a + b}, functionallyIdentical(function(fn){
+testExpression('Expression  3', '(a b){a + b}', function(a, b){return a + b;}, functionallyIdentical(function(fn){
     return fn(1, 3);
 }));
 
@@ -129,7 +129,7 @@ testExpression('Expression 4',
     '(...a){ map(a (x){x+1}) }',
     function(){
         return Array.prototype.slice.call(arguments).map(function(x){
-            return x + 1
+            return x + 1;
         });
     },
     functionallyIdentical(function(fn){
@@ -143,6 +143,10 @@ testExpression('Named expression 2', 'foo(x){x} bar(fn){fn("world")} bar(foo)', 
 testExpression('Spread apply', '(a b c){a + b + c}(...[0..2])', 3);
 testExpression('Spread concat', '[1 2 3 ...[4..6]]', [1, 2, 3, 4, 5, 6]);
 
+testExpression('dots and that', 'thing.bar()', {thing: { bar: function(){return 'foo';}}}, 'foo');
+testExpression('dots and that with brace accessor', 'thing["bar"]()', {thing: { bar: function(){return 'foo';}}}, 'foo');
+testExpression('context', 'thing.bar()', {thing: { majigger: 2, bar: function(){return this.majigger;}}}, 2);
+testExpression('context with brace accessor', 'thing["bar"]()', {thing: { majigger: 2, bar: function(){return this.majigger;}}}, 2);
 
 
 test('errors', function(t){
@@ -154,6 +158,6 @@ test('errors', function(t){
         }
     });
 
-    t.ok(result.error);
-    t.notOk(result.value);
+    t.ok(result.error, 'did error');
+    t.notOk(result.value, 'did not return a value');
 });
