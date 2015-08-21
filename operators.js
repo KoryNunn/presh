@@ -12,12 +12,6 @@ module.exports = {
             precedence: 3
         }
     },
-    '.': {
-        binary: {
-            name: 'period',
-            precedence: 18
-        }
-    },
     '+': {
         binary: {
             name: 'add',

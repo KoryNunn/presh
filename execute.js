@@ -1,7 +1,5 @@
 var Scope = require('./scope'),
-    toValue = require('./toValue'),
-    operators = require('./operators'),
-    toArray = function(list){return Array.prototype.slice.call(list);};
+    toValue = require('./toValue');
 
 var reservedKeywords = {
     'true': true,
@@ -9,10 +7,6 @@ var reservedKeywords = {
     'null': null,
     'undefined': undefined
 };
-
-function lessThan(lessThan, scope){
-    return executeToken(lessThan.left, scope).value < executeToken(lessThan.right, scope).value;
-}
 
 function resolveSpreads(content, scope){
     var result = [];
@@ -30,23 +24,22 @@ function resolveSpreads(content, scope){
     return result;
 }
 
-function functionCall(functionCall, scope){
-    var fn = executeToken(functionCall.target, scope).value,
-        result;
+function functionCall(token, scope){
+    var functionToken = executeToken(token.target, scope),
+        fn = functionToken.value;
 
     if(typeof fn !== 'function'){
         scope.throw(fn + ' is not a function');
     }
-
-    return fn.apply(null, resolveSpreads(functionCall.content, scope));
+    return fn.apply(functionToken.context, resolveSpreads(token.content, scope));
 }
 
-function functionExpression(functionExpression, scope){
+function functionExpression(token, scope){
     var fn = function(){
         var args = arguments,
             functionScope = new Scope(scope);
 
-        functionExpression.parameters.forEach(function(parameter, index){
+        token.parameters.forEach(function(parameter, index){
 
             if(parameter.name === 'spread'){
                 functionScope.set(parameter.right.name, Array.prototype.slice.call(args, index));
@@ -56,27 +49,29 @@ function functionExpression(functionExpression, scope){
             functionScope.set(parameter.name, args[index]);
         });
 
-        return execute(functionExpression.content, functionScope).value;
+        return execute(token.content, functionScope).value;
     };
 
-    if(functionExpression.identifier){
-        scope.set(functionExpression.identifier.name, fn);
+    if(token.identifier){
+        scope.set(token.identifier.name, fn);
     }
 
     return fn;
 }
 
-function ternary(ternary, scope){
+function ternary(token, scope){
 
     if(scope._debug){
         console.log('Executing operator: ' + operator.name, operator.left, operator.right);
     }
 
-    return executeToken(ternary.left, scope).value ? executeToken(ternary.middle, scope).value : executeToken(ternary.right, scope).value;
+    return executeToken(token.left, scope).value ?
+        executeToken(token.middle, scope).value :
+        executeToken(token.right, scope).value;
 }
 
-function identifier(identifier, scope){
-    var name = identifier.name;
+function identifier(token, scope){
+    var name = token.name;
     if(name in reservedKeywords){
         return reservedKeywords[name];
     }
@@ -86,27 +81,34 @@ function identifier(identifier, scope){
     return scope.get(name);
 }
 
-function number(number, scope){
-    return number.value;
+function number(token){
+    return token.value;
 }
 
-function string(string, scope){
-    return string.value;
+function string(token){
+    return token.value;
 }
 
-function period(period, scope){
-    var target = executeToken(period.left, scope).value;
+function period(token, scope){
+    var target = executeToken(token.left, scope).value;
 
     if(!target || !(typeof target === 'object' || typeof target === 'function')){
         scope.throw('target is not an object');
         return;
     }
 
-    return target[period.right.name];
+
+    var result = target.hasOwnProperty(token.right.name) ? target[token.right.name] : undefined;
+
+    if(typeof result === 'function'){
+        result = toValue(result, scope, target);
+    }
+
+    return result;
 }
 
-function spread(spread, scope){
-    var target = executeToken(spread.right, scope).value;
+function spread(token, scope){
+    var target = executeToken(token.right, scope).value;
 
     if(!Array.isArray(target)){
         scope.throw('target did not resolve to an array');
@@ -115,9 +117,9 @@ function spread(spread, scope){
     return target;
 }
 
-function accessor(accessor, scope){
-    var accessorValue = execute(accessor.content, scope).value,
-        target = executeToken(accessor.target, scope).value;
+function accessor(token, scope){
+    var accessorValue = execute(token.content, scope).value,
+        target = executeToken(token.target, scope).value;
 
     if(!target || !(typeof target === 'object' || typeof target === 'function')){
         scope.throw('target is not an object');
@@ -126,48 +128,26 @@ function accessor(accessor, scope){
     return target[accessorValue];
 }
 
-function set(set, scope){
-    if(set.content.length === 1 && set.content[0].name === 'range'){
-        var range = set.content[0],
+function set(token, scope){
+    if(token.content.length === 1 && token.content[0].name === 'range'){
+        var range = token.content[0],
             start = executeToken(range.left, scope).value,
             end = executeToken(range.right, scope).value,
             reverse = end < start,
-            length = Math.abs(end - start),
             result = [];
 
         for (var i = start; reverse ? i >= end : i <= end; reverse ? i-- : i++) {
             result.push(i);
-        };
+        }
+
         return result;
     }
 
-    return resolveSpreads(set.content, scope);
+    return resolveSpreads(token.content, scope);
 }
 
-function value(value, scope){
-    return value.value;
-}
-
-function operator(operator, scope){
-    if(operator.name in handlers){
-        return toValue(handlers[operator.name](operator, scope), scope);
-    }
-
-    if(operator.left){
-        if(scope._debug){
-            console.log('Executing operator: ' + operator.name, operator.left, operator.right);
-        }
-        return operator.operator.fn(executeToken(operator.left, scope).value, executeToken(operator.right, scope).value);
-    }
-
-    if(scope._debug){
-        console.log('Executing operator: ' + operator.name. operator.right);
-    }
-    return operator.operator.fn(executeToken(operator.right, scope).value);
-}
-
-function contentHolder(parenthesisGroup, scope){
-    return execute(parenthesisGroup.content, scope).value;
+function value(token){
+    return token.value;
 }
 
 var handlers = {
@@ -187,15 +167,37 @@ var handlers = {
     statement: contentHolder
 };
 
+function operator(token, scope){
+    if(token.name in handlers){
+        return toValue(handlers[token.name](token, scope), scope);
+    }
+
+    if(token.left){
+        if(scope._debug){
+            console.log('Executing token: ' + token.name, token.left, token.right);
+        }
+        return token.operator.fn(executeToken(token.left, scope).value, executeToken(token.right, scope).value);
+    }
+
+    if(scope._debug){
+        console.log('Executing operator: ' + token.name. token.right);
+    }
+    return token.operator.fn(executeToken(token.right, scope).value);
+}
+
+function contentHolder(parenthesisGroup, scope){
+    return execute(parenthesisGroup.content, scope).value;
+}
+
 function executeToken(token, scope){
     if(scope._error){
-        return {error: scope._error}
+        return {error: scope._error};
     }
     return toValue(handlers[token.type](token, scope), scope);
 }
 
 function execute(tokens, scope, debug){
-    var scope = scope instanceof Scope ? scope : new Scope(scope, debug);
+    scope = scope instanceof Scope ? scope : new Scope(scope, debug);
 
     var result;
     for (var i = 0; i < tokens.length; i++) {

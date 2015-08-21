@@ -3,7 +3,7 @@ var operators = require('./operators');
 function lexString(source){
     var startChar = source.charAt(0);
 
-    if(startChar !== '"' && startChar !== "'"){
+    if(startChar !== '"' && startChar !== '\''){
         return;
     }
 
@@ -45,8 +45,8 @@ function lexWord(source){
 
 function lexNumber(source){
     var specials = {
-        "NaN": Number.NaN,
-        "Infinity": Infinity
+        'NaN': Number.NaN,
+        'Infinity': Infinity
     };
 
     var token = {
@@ -114,6 +114,7 @@ function lexComment(source){
 }
 
 var characters = {
+    '.': 'period',
     ';': 'semicolon',
     '{': 'braceOpen',
     '}': 'braceClose',

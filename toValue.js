@@ -1,26 +1,33 @@
 var v = {};
-module.exports = function toValue(value, scope){
+
+function isValue(value){
+    return value && value._value === v;
+}
+
+module.exports = function toValue(value, scope, context){
     if(scope._error){
         return {
             error: scope._error
         };
     }
 
-    if(value && value._value === v){
+    if(isValue(value)){
+        if(typeof context === 'object' || typeof context === 'function'){
+            value.context = context;
+        }
         return value;
     }
 
     return {
         type: 'value',
+        context: context,
         value: value,
         _value: v
     };
 };
 
-module.exports.isValue = function(value){
-    return value && value._value === v;
-};
+module.exports.isValue = isValue;
 
 module.exports.value = function(value){
-    return module.exports.isValue(value) ? value.value : value;
+    return isValue(value) ? value.value : value;
 };
