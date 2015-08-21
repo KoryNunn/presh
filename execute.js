@@ -89,8 +89,7 @@ function string(token){
     return token.value;
 }
 
-function period(token, scope){
-    var target = executeToken(token.left, scope).value;
+function getProperty(token, scope, target, accessor){
 
     if(!target || !(typeof target === 'object' || typeof target === 'function')){
         scope.throw('target is not an object');
@@ -98,13 +97,26 @@ function period(token, scope){
     }
 
 
-    var result = target.hasOwnProperty(token.right.name) ? target[token.right.name] : undefined;
+    var result = target.hasOwnProperty(accessor) ? target[accessor] : undefined;
 
     if(typeof result === 'function'){
         result = toValue(result, scope, target);
     }
 
     return result;
+}
+
+function period(token, scope){
+    var target = executeToken(token.left, scope).value;
+
+    return getProperty(token, scope, target, token.right.name);
+}
+
+function accessor(token, scope){
+    var accessorValue = execute(token.content, scope).value,
+        target = executeToken(token.target, scope).value;
+
+    return getProperty(token, scope, target, accessorValue);
 }
 
 function spread(token, scope){
@@ -115,17 +127,6 @@ function spread(token, scope){
     }
 
     return target;
-}
-
-function accessor(token, scope){
-    var accessorValue = execute(token.content, scope).value,
-        target = executeToken(token.target, scope).value;
-
-    if(!target || !(typeof target === 'object' || typeof target === 'function')){
-        scope.throw('target is not an object');
-    }
-
-    return target[accessorValue];
 }
 
 function set(token, scope){

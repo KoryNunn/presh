@@ -1,15 +1,15 @@
 {
   "name": "presh",
   "version": "1.1.2",
-  "description": "",
+  "description": "An ex'presh'n langauge.. for safe evaluation of arbitrary functionality in javascript.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "node ./test",
     "watch": "watchify test -o test/index.browser.js -d",
     "watchExample": "watchify example -o example/index.browser.js -d"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "Kory Nunn <knunn187@gmail.com>",
+  "license": "MIT",
   "devDependencies": {
     "deep-equal": "^1.0.0",
     "same-value": "^1.0.0"
@@ -17,5 +17,16 @@
   "dependencies": {
     "flat-merge": "^1.0.0",
     "string-template": "^0.2.1"
-  }
+  },
+  "directories": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/KoryNunn/presh.git"
+  },
+  "bugs": {
+    "url": "https://github.com/KoryNunn/presh/issues"
+  },
+  "homepage": "https://github.com/KoryNunn/presh#readme"
 }

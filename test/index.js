@@ -144,7 +144,9 @@ testExpression('Spread apply', '(a b c){a + b + c}(...[0..2])', 3);
 testExpression('Spread concat', '[1 2 3 ...[4..6]]', [1, 2, 3, 4, 5, 6]);
 
 testExpression('dots and that', 'thing.bar()', {thing: { bar: function(){return 'foo';}}}, 'foo');
+testExpression('dots and that with brace accessor', 'thing["bar"]()', {thing: { bar: function(){return 'foo';}}}, 'foo');
 testExpression('context', 'thing.bar()', {thing: { majigger: 2, bar: function(){return this.majigger;}}}, 2);
+testExpression('context with brace accessor', 'thing["bar"]()', {thing: { majigger: 2, bar: function(){return this.majigger;}}}, 2);
 
 
 test('errors', function(t){
