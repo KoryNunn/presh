@@ -17,14 +17,16 @@ function functionallyIdentical(tester){
     };
 }
 
-function testExpression(name, expression, scope, expected, comparitor){
+function testExpression(name, expression, scope, expected, comparitor, only){
     if(!scope || typeof scope !== 'object' || !expected ||  typeof expected === 'function'){
         comparitor = expected;
         expected = scope;
         scope = null;
     }
 
-    test(name, function(t){
+    var executeTest = only ? test.only : test;
+
+    executeTest(name, function(t){
         t.plan(1);
 
         var result = presh(expression, scope || {
@@ -39,7 +41,6 @@ function testExpression(name, expression, scope, expected, comparitor){
         }
 
         t.deepEqual(result.value, expected);
-
     });
 }
 
@@ -114,6 +115,16 @@ testExpression('Spread negatives', '[-2..2]', [-2, -1, 0, 1, 2]);
 testExpression('Spread negatives reverse', '[2..-2]', [2, 1, 0, -1, -2]);
 testExpression('Spread non-number', '[(0)..2]', [0, 1, 2]);
 testExpression('Spread complex', '(a){[a..a*2]}(3)', [3, 4, 5, 6]);
+
+testExpression('Objects', '{}', {}, null, null);
+testExpression('Objects with shallow content', '{a:1}', {a: 1}, null, null);
+testExpression('Objects with shallow content {a:1 b:1}', '{a:1 b:1}', {a: 1, b: 1}, null, null);
+testExpression('Objects with deep content', '{a: {b:1}}', {a: {b: 1}}, null, null);
+testExpression('Objects with identifiers', '(x){ {x} }(6)', {x: 6}, null, null);
+testExpression('Objects with evaluated keys', '{[2+2]:true}', {4: true}, null, null);
+
+testExpression('Array', '[1 2 3]', [1,2,3], null, null);
+testExpression('Array concat', '[1 2 3 ...[4 5 6]]', [1, 2, 3, 4, 5, 6], null, null);
 
 testExpression('Expression 1', '(x){x}', function(x){return x;}, functionallyIdentical(function(fn){
     return fn(1);
