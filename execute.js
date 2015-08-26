@@ -151,6 +151,39 @@ function value(token){
     return token.value;
 }
 
+function object(token, scope){
+    var result = {};
+
+    var content = token.content;
+
+    for(var i = 0; i < content.length; i ++) {
+        var child = content[i],
+            key,
+            value;
+
+        if(child.name === 'tuple'){
+            if(child.left.type === 'identifier'){
+                key = child.left.name;
+            }else if(child.left.type === 'set' && child.left.content.length === 1){
+                key = executeToken(child.left.content[0], scope).value;
+            }else{
+                scope.throw('Unexpected token in object constructor: ' + child.type);
+            }
+
+            value = executeToken(child.right, scope).value;
+        }else if(child.type === 'identifier'){
+            key = child.name;
+            value = executeToken(child, scope).value;
+        }else{
+            scope.throw('Unexpected token in object constructor: ' + child.type);
+        }
+
+        result[key] = value;
+    }
+
+    return result;
+}
+
 var handlers = {
     ternary: ternary,
     functionCall: functionCall,
@@ -165,7 +198,8 @@ var handlers = {
     value: value,
     operator: operator,
     parenthesisGroup: contentHolder,
-    statement: contentHolder
+    statement: contentHolder,
+    braceGroup: object
 };
 
 function operator(token, scope){
