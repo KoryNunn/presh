@@ -51,5 +51,8 @@ Scope.prototype.isDefined = function(key){
     }
     return this.__outerScope__ && this.__outerScope__.isDefined(key) || false;
 };
+Scope.prototype.hasError = function(){
+    return this._error;
+};
 
 module.exports = Scope;
