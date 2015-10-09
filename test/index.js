@@ -18,7 +18,7 @@ function functionallyIdentical(tester){
 }
 
 function executeTest(test, name, expression, scope, expected, comparitor){
-    if(!scope || typeof scope !== 'object' || !expected ||  typeof expected === 'function'){
+    if(!scope || typeof scope !== 'object' || (!expected && arguments.length < 5) ||  typeof expected === 'function'){
         comparitor = expected;
         expected = scope;
         scope = null;
@@ -160,6 +160,7 @@ testExpression('dots and that with brace accessor', 'thing["bar"]()', {thing: { 
 testExpression('context', 'thing.bar()', {thing: { majigger: 2, bar: function(){return this.majigger;}}}, 2);
 testExpression('context with brace accessor', 'thing["bar"]()', {thing: { majigger: 2, bar: function(){return this.majigger;}}}, 2);
 
+testExpression('has error', 'thing.stuff()', {thing: { bar: function(){return 'foo';}}}, undefined);
 
 test('errors', function(t){
     t.plan(2);

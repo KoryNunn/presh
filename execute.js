@@ -31,6 +31,11 @@ function functionCall(token, scope){
     if(typeof fn !== 'function'){
         scope.throw(fn + ' is not a function');
     }
+
+    if(scope.hasError()){
+        return;
+    }
+
     return fn.apply(functionToken.context, resolveSpreads(token.content, scope));
 }
 
