@@ -1,4 +1,8 @@
 module.exports = {
+    log: function(x){
+        console.log.apply(console, arguments);
+        return x;
+    },
     map: function(items, fn){
         return items.map(fn);
     },

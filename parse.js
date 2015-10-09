@@ -112,7 +112,7 @@ function parseParenthesis(tokens, ast) {
         }
     }
 
-    var target = !openToken.delimiterPrefix && lastTokenMatches(ast, ['*', '!statement'], true),
+    var target = !openToken.delimiterPrefix && lastTokenMatches(ast, ['*', '!statement', '!operator', '!set'], true),
         content = parse(tokens.splice(0, position).slice(1,-1)),
         astNode;
 

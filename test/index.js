@@ -173,3 +173,13 @@ test('errors', function(t){
     t.ok(result.error, 'did error');
     t.notOk(result.value, 'did not return a value');
 });
+
+testExpression('fizzbuzz', 'map([1..100](x){log((x%3?"":"Fizz")+(x%5?"":"Buzz")||x)})', (function(){
+    var result = [];
+
+    for (var i = 1; i <= 100; i++) {
+       result.push((i%3?'':'Fizz') + (i%5?'':'Buzz')||i);
+    };
+
+     return result;
+})());
