@@ -11,5 +11,6 @@ module.exports = {
             return items.reduce(seed);
         }
         return items.reduce(fn, seed);
-    }
+    },
+    math: Math
 };
