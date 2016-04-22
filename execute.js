@@ -36,7 +36,15 @@ function functionCall(token, scope){
         return;
     }
 
-    return fn.apply(functionToken.context, resolveSpreads(token.content, scope));
+    if(fn.__preshFunction__){
+        return fn.apply(functionToken.context, resolveSpreads(token.content, scope));
+    }
+
+    try{
+        return fn.apply(functionToken.context, resolveSpreads(token.content, scope));
+    }catch(error){
+        scope.throw(error);
+    }
 }
 
 function functionExpression(token, scope){
@@ -60,6 +68,8 @@ function functionExpression(token, scope){
     if(token.identifier){
         scope.set(token.identifier.name, fn);
     }
+
+    fn.__preshFunction__ = true;
 
     return fn;
 }
