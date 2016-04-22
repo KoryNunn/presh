@@ -163,6 +163,7 @@ testExpression('context with brace accessor', 'thing["bar"]()', {thing: { majigg
 testExpression('has error', 'thing.stuff()', {thing: { bar: function(){return 'foo';}}}, undefined);
 
 testExpression('catches error', 'map(null null)', undefined);
+testExpression('math is global', 'math.floor(foo) + math.abs(bar)', {foo: 123.456, bar: -123}, 246);
 
 test('errors', function(t){
     t.plan(2);
