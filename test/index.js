@@ -187,3 +187,18 @@ testExpression('fizzbuzz', 'map([1..100](x){log((x%3?"":"Fizz")+(x%5?"":"Buzz")|
 
      return result;
 })());
+
+testExpression('and both true', 'true && true', true);
+testExpression('and second false', 'true && false', false);
+testExpression('and both false', 'false && true', false);
+testExpression('and first false', 'false && true', false);
+testExpression('and first false second error', 'false && foo.bar.baz', false);
+
+test('and first error', function(t){
+    t.plan(2);
+
+    var result = presh('foo.bar.baz && true');
+
+    t.ok(result.error, 'did error');
+    t.notOk(result.value, 'did not return a value');
+});

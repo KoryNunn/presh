@@ -217,6 +217,12 @@ var handlers = {
     braceGroup: object
 };
 
+function nextOperatorToken(token, scope){
+    return function(){
+        return executeToken(token, scope).value;
+    };
+}
+
 function operator(token, scope){
     if(token.name in handlers){
         return toValue(handlers[token.name](token, scope), scope);
@@ -226,13 +232,14 @@ function operator(token, scope){
         if(scope._debug){
             console.log('Executing token: ' + token.name, token.left, token.right);
         }
-        return token.operator.fn(executeToken(token.left, scope).value, executeToken(token.right, scope).value);
+        return token.operator.fn(nextOperatorToken(token.left, scope), nextOperatorToken(token.right, scope));
     }
 
     if(scope._debug){
         console.log('Executing operator: ' + token.name. token.right);
     }
-    return token.operator.fn(executeToken(token.right, scope).value);
+
+    return token.operator.fn(nextOperatorToken(token.right, scope));
 }
 
 function contentHolder(parenthesisGroup, scope){
