@@ -184,6 +184,7 @@ function object(token, scope){
                 key = executeToken(child.left.content[0], scope).value;
             }else{
                 scope.throw('Unexpected token in object constructor: ' + child.type);
+                return;
             }
 
             value = executeToken(child.right, scope).value;
@@ -195,6 +196,7 @@ function object(token, scope){
 
             if(!isInstance(source)){
                 scope.throw('Target did not resolve to an instance of an object');
+                return;
             }
 
 
@@ -207,6 +209,7 @@ function object(token, scope){
 
             if(targetIdentifier.type !== 'identifier'){
                 scope.throw('Target of delete was not an identifier');
+                return;
             }
 
             delete result[targetIdentifier.name];
@@ -214,6 +217,7 @@ function object(token, scope){
             continue;
         }else{
             scope.throw('Unexpected token in object constructor: ' + child.type);
+            return;
         }
 
         result[key] = value;
