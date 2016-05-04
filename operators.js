@@ -1,4 +1,11 @@
 module.exports = {
+    'delete': {
+        unary: {
+            name: 'delete',
+            direction: 'right',
+            precedence: 20
+        }
+    },
     '...': {
         unary: {
             name: 'spread',
