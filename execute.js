@@ -1,5 +1,6 @@
 var Scope = require('./scope'),
-    toValue = require('./toValue');
+    toValue = require('./toValue'),
+    isInstance = require('is-instance');
 
 var reservedKeywords = {
     'true': true,
@@ -183,14 +184,40 @@ function object(token, scope){
                 key = executeToken(child.left.content[0], scope).value;
             }else{
                 scope.throw('Unexpected token in object constructor: ' + child.type);
+                return;
             }
 
             value = executeToken(child.right, scope).value;
         }else if(child.type === 'identifier'){
             key = child.name;
             value = executeToken(child, scope).value;
+        }else if(child.name === 'spread'){
+            var source = executeToken(child.right, scope).value;
+
+            if(!isInstance(source)){
+                scope.throw('Target did not resolve to an instance of an object');
+                return;
+            }
+
+
+            Object.keys(source).forEach(function(key){
+                result[key] = source[key];
+            });
+            continue;
+        }else if(child.name === 'delete'){
+            var targetIdentifier = child.right;
+
+            if(targetIdentifier.type !== 'identifier'){
+                scope.throw('Target of delete was not an identifier');
+                return;
+            }
+
+            delete result[targetIdentifier.name];
+
+            continue;
         }else{
             scope.throw('Unexpected token in object constructor: ' + child.type);
+            return;
         }
 
         result[key] = value;

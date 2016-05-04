@@ -11,6 +11,7 @@ Highly functional, stateless, easy to add scope to, expressive, readable.
 Implicit returns.
 No assignment.
 Ranges.
+Spread (apply, array, object)
 
 ## usage
 
