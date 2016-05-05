@@ -8,7 +8,7 @@ Highly functional, stateless, easy to add scope to, expressive, readable.
 
 ## Try
 
-[/example](http://rawgit.com/KoryNunn/presh/master/example/index.html)
+[/example](https://rawgit.com/KoryNunn/presh/master/example/index.html)
 
 ## features
 
