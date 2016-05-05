@@ -1,0 +1,26 @@
+*{
+    box-sizing: border-box;
+}
+
+pre{
+    border: solid 1px black;
+    padding: 10px;
+    position: relative;
+}
+
+pre[error]{
+    margin-bottom: 50px;
+    border-color: red;
+}
+
+
+pre[error]::after{
+    background: red;
+    content: attr(error);
+    position: absolute;
+    top:100%;
+    left:-1px;
+    right:-1px;
+    height:40px;
+    padding:3px;
+}

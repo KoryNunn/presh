@@ -229,8 +229,8 @@ function parseSet(tokens, ast) {
         }
     }
 
-    var target = !openToken.delimiterPrefix && lastTokenMatches(ast, ['*', '!statement', '!operator'], true),
-        content = parse(tokens.splice(0, position).slice(1,-1));
+    var content = parse(tokens.splice(0, position).slice(1,-1)),
+        target = !openToken.delimiterPrefix && lastTokenMatches(ast, ['*', '!functionExpression', '!braceGroup', '!statement', '!operator'], true);
 
     if(target){
         ast.push({
@@ -278,7 +278,9 @@ function parseOperator(tokens, ast){
             ast.push({
                 type: 'operator',
                 name: operatorsForSource.binary.name,
-                operator: operatorsForSource.binary
+                operator: operatorsForSource.binary,
+                sourceRef: token.sourceRef,
+                index: token.index
             });
             return true;
         }
@@ -287,7 +289,9 @@ function parseOperator(tokens, ast){
             ast.push({
                 type: 'operator',
                 name: operatorsForSource.unary.name,
-                operator: operatorsForSource.unary
+                operator: operatorsForSource.unary,
+                sourceRef: token.sourceRef,
+                index: token.index
             });
             return true;
         }
@@ -296,7 +300,9 @@ function parseOperator(tokens, ast){
             ast.push({
                 type: 'operator',
                 name: operatorsForSource.trinary.name,
-                operator: operatorsForSource.trinary
+                operator: operatorsForSource.trinary,
+                sourceRef: token.sourceRef,
+                index: token.index
             });
             return true;
         }

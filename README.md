@@ -6,12 +6,73 @@ An ex'presh'n langauge.. for safe evaluation of arbitrary functionality in javas
 
 Highly functional, stateless, easy to add scope to, expressive, readable.
 
+## Try
+
+[/example](http://rawgit.com/KoryNunn/presh/master/example/index.html)
+
 ## features
 
 Implicit returns.
+
+```
+halve(x){ x / 2 }
+
+halve(2) -> 1
+```
+
 No assignment.
+
+```
+x = 5 <- Nope!
+
+var, let, const <- Nope nope nope!
+
+namedFunction(x){ ... } <- Sure!
+```
+
 Ranges.
+
+```
+[1..10] -> [1,2,3,4,5,6,7,8,9,10]
+
+[10..1] -> [10,9,8,7,6,5,4,3,2,1]
+
+[-2..2] -> [-2,-1,0,1,2]
+
+```
+
 Spread (apply, array, object)
+
+Apply:
+```
+sum(...args){ fold(args (a b) { a + b }) }
+
+sum(1 2 3 4) -> 10
+
+```
+
+Array:
+```
+[0..10] -> [0,1,2,3,4,5,6,7,8,9,10]
+
+```
+
+Object:
+```
+defaults(){{a:1 b:2}}
+
+{...defaults() c: 3} -> { a: 1, b: 2, c: 3 }
+```
+
+Literal delete:
+
+Object:
+```
+defaults(){{a:1 b:2}}
+
+{...defaults() c: 3 delete a} -> { b: 2, c: 3 }
+```
+
 
 ## usage
 
