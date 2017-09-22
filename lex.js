@@ -36,6 +36,10 @@ function lexWord(source){
         return;
     }
 
+    if(match in operators){
+        return;
+    }
+
     return {
         type: 'word',
         source: match[0],
@@ -200,10 +204,10 @@ var lexers = [
     lexDelimiter,
     lexComment,
     lexNumber,
+    lexWord,
     lexOperators,
     lexCharacters,
     lexString,
-    lexWord,
     lexSpread
 ];
 

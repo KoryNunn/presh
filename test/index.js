@@ -126,6 +126,7 @@ testExpression('Objects with evaluated keys', '{[2+2]:true}', {4: true});
 testExpression('Objects with spread', '(a){ {...a b: 2} }({a: 1})', {a:1, b:2});
 testExpression('Objects with delete', '{a: 1 delete a}', {});
 testExpression('Objects with spread delete', '(a){ {...a b: 2 delete c} }({a: 1 c: 3})', {a:1, b:2});
+testExpression('indexOf', '{ index: 0 }.index', 0);
 
 testExpression('Array', '[1 2 3]', [1,2,3]);
 testExpression('Array concat', '[1 2 3 ...[4 5 6]]', [1, 2, 3, 4, 5, 6]);
