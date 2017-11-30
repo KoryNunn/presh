@@ -101,6 +101,10 @@ result = presh(expression, scope);
 
 presh syntax is similar to javascript, but a little more weighted to functional programming.
 
+Key differences from javascript:
+
+ - no commas
+
 ### Function Expression
 
 ```
