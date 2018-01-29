@@ -1,6 +1,7 @@
 var Scope = require('./scope'),
     toValue = require('./toValue'),
-    isInstance = require('is-instance');
+    isInstance = require('is-instance'),
+    righto = require('righto');
 
 var reservedKeywords = {
     'true': true,
@@ -10,42 +11,52 @@ var reservedKeywords = {
 };
 
 function resolveSpreads(content, scope){
-    var result = [];
+    var resolved = righto.all(content.map(function(token){
+        return righto.from(executeToken(token, scope).value).get(result => [token, result]);
+    }));
 
-    content.forEach(function(token){
-
-        if(token.name === 'spread'){
-            result.push.apply(result, executeToken(token, scope).value);
-            return;
+    return resolved.get(results => results.reduce(function(result, item){
+        if(item[0].name === 'spread'){
+            return result.concat(item[1]);
         }
 
-        result.push(executeToken(token, scope).value);
-    });
+        result.push(item[1]);
 
-    return result;
+        return result;
+    }, []));
 }
 
 function functionCall(token, scope){
     var functionToken = executeToken(token.target, scope),
         fn = functionToken.value;
 
-    if(typeof fn !== 'function'){
-        scope.throw(fn + ' is not a function');
-    }
+    return righto.from(fn).get(function(fn){
+        if(typeof fn !== 'function'){
+            scope.throw(fn + ' is not a function');
+        }
 
-    if(scope.hasError()){
-        return;
-    }
+        if(scope.hasError()){
+            return;
+        }
 
-    if(fn.__preshFunction__){
-        return fn.apply(functionToken.context, resolveSpreads(token.content, scope));
-    }
+        if(fn.__preshFunction__){
+            return righto.sync(fn.apply.bind(fn), functionToken.context, resolveSpreads(token.content, scope));
+        }
 
-    try{
-        return fn.apply(functionToken.context, resolveSpreads(token.content, scope));
-    }catch(error){
-        scope.throw(error);
-    }
+        return righto.sync(function(){
+            try{
+                return fn.apply.apply(fn, arguments);
+            }catch(error){
+                scope.throw(error);
+            }
+        }, functionToken.context, resolveSpreads(token.content, scope)).get(result => {
+            if(typeof result === 'object'){
+                return righto.resolve(result);
+            }
+
+            return result;
+        });
+    });
 }
 
 function functionExpression(token, scope){
@@ -63,7 +74,13 @@ function functionExpression(token, scope){
             functionScope.set(parameter.name, args[index]);
         });
 
-        return execute(token.content, functionScope).value;
+        return execute(token.content, functionScope).value.get(result => {
+            if(typeof result === 'object'){
+                return righto.resolve(result);
+            }
+
+            return result;
+        });
     };
 
     if(token.identifier){
@@ -81,9 +98,11 @@ function ternary(token, scope){
         console.log('Executing operator: ' + operator.name, operator.left, operator.right);
     }
 
-    return executeToken(token.left, scope).value ?
-        executeToken(token.middle, scope).value :
-        executeToken(token.right, scope).value;
+    return righto.from(executeToken(token.left, scope).value).get(function(result){
+        return result ?
+            executeToken(token.middle, scope).value :
+            executeToken(token.right, scope).value;
+    });
 }
 
 function identifier(token, scope){
@@ -106,18 +125,12 @@ function string(token){
 }
 
 function getProperty(token, scope, target, accessor){
-
     if(!target || !(typeof target === 'object' || typeof target === 'function')){
         scope.throw('target is not an object');
         return;
     }
 
-
     var result = target.hasOwnProperty(accessor) ? target[accessor] : undefined;
-
-    if(typeof result === 'function'){
-        result = toValue(result, scope, target);
-    }
 
     return result;
 }
@@ -125,39 +138,40 @@ function getProperty(token, scope, target, accessor){
 function period(token, scope){
     var target = executeToken(token.left, scope).value;
 
-    return getProperty(token, scope, target, token.right.name);
+    return toValue(righto.sync(getProperty, token, scope, target, token.right.name), scope, target);
 }
 
 function accessor(token, scope){
     var accessorValue = execute(token.content, scope).value,
         target = executeToken(token.target, scope).value;
 
-    return getProperty(token, scope, target, accessorValue);
+    return toValue(righto.sync(getProperty, token, scope, target, accessorValue), scope, target);
 }
 
 function spread(token, scope){
-    var target = executeToken(token.right, scope).value;
+    return righto.from(executeToken(token.right, scope).value).get(function(target){
+        if(!Array.isArray(target)){
+            scope.throw('target did not resolve to an array');
+        }
 
-    if(!Array.isArray(target)){
-        scope.throw('target did not resolve to an array');
-    }
-
-    return target;
+        return target;
+    });
 }
 
 function set(token, scope){
     if(token.content.length === 1 && token.content[0].name === 'range'){
-        var range = token.content[0],
-            start = executeToken(range.left, scope).value,
-            end = executeToken(range.right, scope).value,
-            reverse = end < start,
-            result = [];
+        var range = token.content[0];
 
-        for (var i = start; reverse ? i >= end : i <= end; reverse ? i-- : i++) {
-            result.push(i);
-        }
+        return righto(function(start, end, callback){
+            var reverse = end < start,
+                result = [];
 
-        return result;
+            for (var i = start; reverse ? i >= end : i <= end; reverse ? i-- : i++) {
+                result.push(i);
+            }
+
+            callback(null, result);
+        }, executeToken(range.left, scope).value, executeToken(range.right, scope).value);
     }
 
     return resolveSpreads(token.content, scope);
@@ -170,13 +184,13 @@ function value(token){
 function object(token, scope){
     var result = {};
 
+    function addResultPair(a, b){
+        result[a] = b;
+    }
+
     var content = token.content;
 
-    for(var i = 0; i < content.length; i ++) {
-        var child = content[i],
-            key,
-            value;
-
+    return righto.reduce(content.map(function(child){
         if(child.name === 'tuple'){
             if(child.left.type === 'identifier'){
                 key = child.left.name;
@@ -187,43 +201,37 @@ function object(token, scope){
                 return;
             }
 
-            value = executeToken(child.right, scope).value;
+            return righto.sync(addResultPair, key, executeToken(child.right, scope).value);
         }else if(child.type === 'identifier'){
-            key = child.name;
-            value = executeToken(child, scope).value;
+            return righto.sync(addResultPair, child.name, executeToken(child, scope).value);
         }else if(child.name === 'spread'){
-            var source = executeToken(child.right, scope).value;
+            return executeToken(child.right, scope).value.get(function(source){
+                if(!isInstance(source)){
+                    scope.throw('Target did not resolve to an instance of an object');
+                    return;
+                }
 
-            if(!isInstance(source)){
-                scope.throw('Target did not resolve to an instance of an object');
-                return;
-            }
-
-
-            Object.keys(source).forEach(function(key){
-                result[key] = source[key];
+                Object.keys(source).forEach(function(key){
+                    result[key] = source[key];
+                });
             });
-            continue;
         }else if(child.name === 'delete'){
-            var targetIdentifier = child.right;
+            return righto.sync(function(){
+                var targetIdentifier = child.right;
 
-            if(targetIdentifier.type !== 'identifier'){
-                scope.throw('Target of delete was not an identifier');
-                return;
-            }
+                if(targetIdentifier.type !== 'identifier'){
+                    scope.throw('Target of delete was not an identifier');
+                    return;
+                }
 
-            delete result[targetIdentifier.name];
-
-            continue;
+                delete result[targetIdentifier.name];
+            });
         }else{
             scope.throw('Unexpected token in object constructor: ' + child.type);
             return;
         }
 
-        result[key] = value;
-    }
-
-    return result;
+    })).get(() => result);
 }
 
 var handlers = {
@@ -277,6 +285,7 @@ function executeToken(token, scope){
     if(scope._error){
         return {error: scope._error};
     }
+
     return toValue(handlers[token.type](token, scope), scope);
 }
 

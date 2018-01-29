@@ -1,3 +1,4 @@
+var righto = require('righto');
 var v = {};
 
 function isValue(value){
@@ -21,7 +22,7 @@ module.exports = function toValue(value, scope, context){
     return {
         type: 'value',
         context: context,
-        value: value,
+        value: righto.from(value),
         _value: v
     };
 };

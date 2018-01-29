@@ -1,19 +1,21 @@
 var test = require('tape'),
     sameValue = require('same-value'),
     deepEqual = require('deep-equal'),
+    righto = require('righto'),
     presh = require('../');
 
 function functionallyIdentical(tester){
     return function(a, b){
-        var resultA = tester(a);
-        var resultB = tester(b);
+        return righto.sync(function(resultA, resultB){
 
-        // console.log(resultA, resultB);
+            console.log(resultA, resultB);
 
-        if(resultA && typeof resultA === 'object'){
-            return deepEqual(resultA, resultB);
-        }
-        return sameValue(resultA, resultB);
+            if(resultA && typeof resultA === 'object'){
+                return deepEqual(resultA, resultB);
+            }
+            return sameValue(resultA, resultB);
+
+        }, tester(a), tester(b));
     };
 }
 
@@ -27,24 +29,26 @@ function executeTest(test, name, expression, scope, expected, comparitor){
     test(name, function(t){
         t.plan(1);
 
-        var result = presh(expression, scope || {
+        presh(expression, scope || {
             bar: {
                 baz: 'baz'
             }
+        }).value(function(error, value){
+            if(comparitor){
+                righto.from(comparitor(value, expected))
+                .get(result => t.ok(result))();
+                return;
+            }
+
+            t.deepEqual(value, expected);
         });
-
-        if(comparitor){
-            t.ok(comparitor(result.value, expected));
-            return;
-        }
-
-        t.deepEqual(result.value, expected);
     });
 
 }
 
 var testExpression = executeTest.bind(null, test);
 testExpression.only = executeTest.bind(null, test.only);
+testExpression.skip = executeTest.bind(null, test.skip);
 
 testExpression('Booleans: true', 'true', true);
 testExpression('Booleans: false', 'false', false);
@@ -126,7 +130,8 @@ testExpression('Objects with evaluated keys', '{[2+2]:true}', {4: true});
 testExpression('Objects with spread', '(a){ {...a b: 2} }({a: 1})', {a:1, b:2});
 testExpression('Objects with delete', '{a: 1 delete a}', {});
 testExpression('Objects with spread delete', '(a){ {...a b: 2 delete c} }({a: 1 c: 3})', {a:1, b:2});
-testExpression('indexOf', '{ index: 0 }.index', 0);
+testExpression('in operator parse issue', '{ index: 0 }.index', 0);
+testExpression('tilde bug', '~indexOf([0..3] 1)', { indexOf: (a, b) => a.indexOf(b) }, -2);
 
 testExpression('Array', '[1 2 3]', [1,2,3]);
 testExpression('Array concat', '[1 2 3 ...[4 5 6]]', [1, 2, 3, 4, 5, 6]);
@@ -205,4 +210,20 @@ test('and first error', function(t){
 
     t.ok(result.error, 'did error');
     t.notOk(result.value, 'did not return a value');
+});
+
+test('async add', function(t){
+    t.plan(2);
+
+    var scope = {
+        eventual: righto.value(1)
+    };
+
+    var result = presh('eventual + 1', scope);
+
+    t.notOk(result.error, 'did error');
+
+    result.value(function(error, value){
+        t.equal(value, 2, 'evaluated async addition');
+    });
 });

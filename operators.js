@@ -1,3 +1,5 @@
+var righto = require('righto');
+
 module.exports = {
     'delete': {
         unary: {
@@ -23,7 +25,7 @@ module.exports = {
         binary: {
             name: 'add',
             fn: function(a, b) {
-                return a() + b();
+                return righto.sync((a, b) => a + b, a(), b());
             },
             precedence: 13
         },
@@ -31,7 +33,7 @@ module.exports = {
             name: 'positive',
             direction: 'right',
             fn: function(a) {
-                return +a();
+                return a().get(a => +a);
             },
             precedence: 15
         }
@@ -40,7 +42,7 @@ module.exports = {
         binary: {
             name: 'subtract',
             fn: function(a, b) {
-                return a() - b();
+                return righto.sync((a, b) => a - b, a(), b());
             },
             precedence: 13
         },
@@ -48,7 +50,7 @@ module.exports = {
             name: 'negative',
             direction: 'right',
             fn: function(a) {
-                return -a();
+                return a().get(a => -a);
             },
             precedence: 15
         }
@@ -57,7 +59,7 @@ module.exports = {
         binary: {
             name: 'multiply',
             fn: function(a, b) {
-                return a() * b();
+                return righto.sync((a, b) => a * b, a(), b());
             },
             precedence: 14
         }
@@ -66,7 +68,7 @@ module.exports = {
         binary: {
             name: 'divide',
             fn: function(a, b) {
-                return a() / b();
+                return righto.sync((a, b) => a / b, a(), b());
             },
             precedence: 14
         }
@@ -75,7 +77,7 @@ module.exports = {
         binary: {
             name: 'remainder',
             fn: function(a, b) {
-                return a() % b();
+                return righto.sync((a, b) => a % b, a(), b());
             },
             precedence: 14
         }
@@ -84,7 +86,7 @@ module.exports = {
         binary: {
             name: 'in',
             fn: function(a, b) {
-                return a() in b();
+                return righto.sync((a, b) => a in b, a(), b());
             },
             precedence: 11
         }
@@ -93,7 +95,7 @@ module.exports = {
         binary: {
             name: 'exactlyEqual',
             fn: function(a, b) {
-                return a() === b();
+                return righto.sync((a, b) => a === b, a(), b());
             },
             precedence: 10
         }
@@ -102,7 +104,7 @@ module.exports = {
         binary: {
             name: 'notExactlyEqual',
             fn: function(a, b) {
-                return a() !== b();
+                return righto.sync((a, b) => a !== b, a(), b());
             },
             precedence: 10
         }
@@ -111,7 +113,7 @@ module.exports = {
         binary: {
             name: 'equal',
             fn: function(a, b) {
-                return a() == b();
+                return righto.sync((a, b) => a == b, a(), b());
             },
             precedence: 10
         }
@@ -120,7 +122,7 @@ module.exports = {
         binary: {
             name: 'notEqual',
             fn: function(a, b) {
-                return a() != b();
+                return righto.sync((a, b) => a != b, a(), b());
             },
             precedence: 10
         }
@@ -129,7 +131,7 @@ module.exports = {
         binary: {
             name: 'greaterThanOrEqual',
             fn: function(a, b) {
-                return a() >= b();
+                return righto.sync((a, b) => a >= b, a(), b());
             },
             precedence: 11
         }
@@ -138,7 +140,7 @@ module.exports = {
         binary: {
             name: 'lessThanOrEqual',
             fn: function(a, b) {
-                return a() <= b();
+                return righto.sync((a, b) => a <= b, a(), b());
             },
             precedence: 11
         }
@@ -147,7 +149,7 @@ module.exports = {
         binary: {
             name: 'greaterThan',
             fn: function(a, b) {
-                return a() > b();
+                return righto.sync((a, b) => a > b, a(), b());
             },
             precedence: 11
         }
@@ -156,7 +158,7 @@ module.exports = {
         binary: {
             name: 'lessThan',
             fn: function(a, b) {
-                return a() < b();
+                return righto.sync((a, b) => a < b, a(), b());
             },
             precedence: 11
         }
@@ -165,7 +167,7 @@ module.exports = {
         binary: {
             name: 'and',
             fn: function(a, b) {
-                return a() && b();
+                return righto.from(a()).get(a => a && b());
             },
             precedence: 6
         }
@@ -174,7 +176,7 @@ module.exports = {
         binary: {
             name: 'or',
             fn: function(a, b) {
-                return a() || b();
+                return righto.from(a()).get((a) => a || b());
             },
             precedence: 5
         }
@@ -193,7 +195,7 @@ module.exports = {
         binary: {
             name: 'bitwiseAnd',
             fn: function(a, b) {
-                return a() & b();
+                return righto.from(a()).get(a => a && b());
             },
             precedence: 9
         }
@@ -202,7 +204,7 @@ module.exports = {
         binary: {
             name: 'bitwiseXOr',
             fn: function(a, b) {
-                return a() ^ b();
+                return righto.sync((a, b) => a ^ b, a(), b());
             },
             precedence: 8
         }
@@ -211,7 +213,7 @@ module.exports = {
         binary: {
             name: 'bitwiseOr',
             fn: function(a, b) {
-                return a() | b();
+                return righto.sync((a, b) => a | b, a(), b());
             },
             precedence: 7
         }
@@ -221,7 +223,7 @@ module.exports = {
             name: 'bitwiseNot',
             direction: 'right',
             fn: function(a) {
-                return ~a();
+                return a().get(a => ~a);
             },
             precedence: 15
         }
@@ -231,7 +233,7 @@ module.exports = {
             name: 'typeof',
             direction: 'right',
             fn: function(a) {
-                return typeof a();
+                return a.get(a => typeof a);
             },
             precedence: 15
         }
@@ -240,7 +242,7 @@ module.exports = {
         binary: {
             name: 'bitwiseLeftShift',
             fn: function(a, b) {
-                return a() << b();
+                return righto.sync((a, b) => a << b, a(), b());
             },
             precedence: 12
         }
@@ -249,7 +251,7 @@ module.exports = {
         binary: {
             name: 'bitwiseRightShift',
             fn: function(a, b) {
-                return a() >> b();
+                return righto.sync((a, b) => a >> b, a(), b());
             },
             precedence: 12
         }
@@ -258,7 +260,7 @@ module.exports = {
         binary: {
             name: 'bitwiseUnsignedRightShift',
             fn: function(a, b) {
-                return a() >>> b();
+                return righto.sync((a, b) => a >>> b, a(), b());
             },
             precedence: 12
         }

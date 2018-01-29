@@ -20,6 +20,7 @@
   "dependencies": {
     "flat-merge": "^1.0.0",
     "is-instance": "^1.0.1",
+    "righto": "^4.0.0",
     "string-template": "^0.2.1"
   },
   "directories": {
