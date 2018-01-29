@@ -1,6 +1,6 @@
 {
   "name": "presh",
-  "version": "1.6.2",
+  "version": "1.6.3",
   "description": "An ex'presh'n langauge.. for safe evaluation of arbitrary functionality in javascript.",
   "main": "index.js",
   "scripts": {
