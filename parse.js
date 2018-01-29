@@ -230,7 +230,7 @@ function parseSet(tokens, ast) {
     }
 
     var content = parse(tokens.splice(0, position).slice(1,-1)),
-        target = !openToken.delimiterPrefix && lastTokenMatches(ast, ['*', '!functionExpression', '!braceGroup', '!statement', '!operator'], true);
+        target = !openToken.delimiterPrefix && lastTokenMatches(ast, ['*', '!functionExpression', '!statement', '!operator'], true);
 
     if(target){
         ast.push({

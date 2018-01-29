@@ -190,22 +190,24 @@ function object(token, scope){
 
     var content = token.content;
 
+    // Eventuals required as keys or values are immediatly executed, but adding of values to the object is done in order.
+
     return righto.reduce(content.map(function(child){
         if(child.name === 'tuple'){
             if(child.left.type === 'identifier'){
                 key = child.left.name;
             }else if(child.left.type === 'set' && child.left.content.length === 1){
-                key = executeToken(child.left.content[0], scope).value;
+                key = executeToken(child.left.content[0], scope).value();
             }else{
                 scope.throw('Unexpected token in object constructor: ' + child.type);
                 return;
             }
 
-            return righto.sync(addResultPair, key, executeToken(child.right, scope).value);
+            return righto.sync(addResultPair, key, executeToken(child.right, scope).value());
         }else if(child.type === 'identifier'){
-            return righto.sync(addResultPair, child.name, executeToken(child, scope).value);
+            return righto.sync(addResultPair, child.name, executeToken(child, scope).value());
         }else if(child.name === 'spread'){
-            return executeToken(child.right, scope).value.get(function(source){
+            return executeToken(child.right, scope).value().get(function(source){
                 if(!isInstance(source)){
                     scope.throw('Target did not resolve to an instance of an object');
                     return;

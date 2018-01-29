@@ -20,7 +20,7 @@ function functionallyIdentical(tester){
 }
 
 function executeTest(test, name, expression, scope, expected, comparitor){
-    if(!scope || typeof scope !== 'object' || (!expected && arguments.length < 5) ||  typeof expected === 'function'){
+    if(!scope || typeof scope !== 'object' || (!expected && arguments.length < 5) || typeof expected === 'function'){
         comparitor = expected;
         expected = scope;
         scope = null;
@@ -221,9 +221,116 @@ test('async add', function(t){
 
     var result = presh('eventual + 1', scope);
 
-    t.notOk(result.error, 'did error');
+    t.notOk(result.error, 'did not error');
 
     result.value(function(error, value){
         t.equal(value, 2, 'evaluated async addition');
+    });
+});
+
+test('async add 2', function(t){
+    t.plan(3);
+
+    var scope = {
+        a: righto(function(done) {
+            setTimeout(() => done(null, 1), 100);
+        }),
+        b: righto(function(done) {
+            setTimeout(() => done(null, 1), 200);
+        })
+    };
+
+    var result = presh('a + b', scope);
+
+    t.notOk(result.error, 'did not error');
+
+    var startTime = Date.now();
+
+    result.value(function(error, value){
+        t.equal(value, 2, 'evaluated async addition');
+        var elapsed = Date.now() - startTime;
+        t.ok(elapsed > 99 && elapsed < 299, 'Executed in parallel');
+    });
+});
+
+test('async object', function(t){
+    t.plan(3);
+
+    var scope = {
+        a: righto(function(done) {
+            setTimeout(() => done(null, 1), 100);
+        }),
+        b: righto(function(done) {
+            setTimeout(() => done(null, 1), 200);
+        })
+    };
+
+    var result = presh('(data){ data.a + data.b }({ a: a b: b})', scope);
+
+    t.notOk(result.error, 'did not error');
+
+    var startTime = Date.now();
+
+    result.value(function(error, value){
+        t.equal(value, 2, 'evaluated async addition');
+        var elapsed = Date.now() - startTime;
+        t.ok(elapsed > 99 && elapsed < 299, 'Executed in parallel');
+    });
+});
+
+test('async object evaluated keys', function(t){
+    t.plan(3);
+
+    var scope = {
+        a: righto(function(done) {
+            setTimeout(() => done(null, 1), 100);
+        }),
+        b: righto(function(done) {
+            setTimeout(() => done(null, 1), 200);
+        })
+    };
+
+    var result = presh('{ [a]: b }[1]', scope);
+
+    t.notOk(result.error, 'did not error');
+
+    var startTime = Date.now();
+
+    result.value(function(error, value){
+        t.equal(value, 1, 'evaluated async addition');
+        var elapsed = Date.now() - startTime;
+        t.ok(elapsed > 99 && elapsed < 299, 'Executed in parallel');
+    });
+});
+
+test('async deep function expressions', function(t){
+    t.plan(3);
+
+    var result = presh('(a){ (b){ (c) { a + b + c} } }');
+
+    t.notOk(result.error, 'did not error');
+
+    result.value
+    .get(fn => fn(1))
+    .get(fn => fn(2))
+    .get(fn => fn(3))(function(error, result){
+        t.notOk(error, 'did not reject');
+        t.equal(result, 6, 'deeply evaluate correct result')
+    });
+});
+
+test('async scope fn', function(t){
+    t.plan(2);
+
+    var scope = {
+        asyncFn: x => righto.value(x)
+    };
+
+    var result = presh('asyncFn(5) + 5', scope);
+
+    t.notOk(result.error, 'did not error');
+
+    result.value(function(error, value){
+        t.equal(value, 10, 'evaluated async scoped function');
     });
 });
