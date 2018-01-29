@@ -274,7 +274,15 @@ function parseOperator(tokens, ast){
             operatorsForSource = operators[token.source],
             startOfStatement = !lastTokenMatches(ast, ['*', '!statement', '!operator']);
 
-        if(operatorsForSource.binary && !startOfStatement){
+        if(operatorsForSource.binary && !startOfStatement &&
+            !(
+                operatorsForSource.unary &&
+                (
+                    token.delimiterPrefix &&
+                    tokens[0].type !== 'delimiter'
+                )
+            )
+        ){
             ast.push({
                 type: 'operator',
                 name: operatorsForSource.binary.name,
@@ -295,6 +303,7 @@ function parseOperator(tokens, ast){
             });
             return true;
         }
+
 
         if(operatorsForSource.trinary && !startOfStatement){
             ast.push({

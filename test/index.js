@@ -62,6 +62,10 @@ testExpression('Numbers: -NaN', '-NaN', NaN, sameValue);
 testExpression('Numbers: Infinity', 'Infinity', Infinity, sameValue);
 testExpression('Numbers: -Infinity', '-Infinity', -Infinity, sameValue);
 
+testExpression('Precedence: + binds binary first with preceding and following delimiter', '1 + 1', 2);
+testExpression('Precedence: + binds unary without preceeding delimiter', '1 +1', 1);
+testExpression('Precedence: + binds binary without any delimiter first', '1+1', 2);
+
 testExpression('Strings: "foo"', '"foo"', 'foo');
 testExpression('Strings: \'foo\'', '\'foo\'', 'foo');
 testExpression('Strings: Escaping', '"foo \\" bar"', 'foo \" bar');
