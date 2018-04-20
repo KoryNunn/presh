@@ -1,32 +1,16 @@
 var operators = require('./operators');
 
 function lexString(source){
-    var startChar = source.charAt(0);
+    var stringMatch = source.match(/^["'](?:[^'"\\]|\\.)*["']/);
 
-    if(startChar !== '"' && startChar !== '\''){
-        return;
+    if(stringMatch){
+        return {
+            type: 'string',
+            stringChar: stringMatch[0].charAt(0),
+            source: stringMatch[0].replace(/\\(.)/g, "$1"),
+            length: stringMatch[0].length
+        };
     }
-
-    var index = 0,
-        escapes = 0;
-
-    while (source.charAt(++index) !== startChar)
-    {
-       if(index >= source.length){
-               throw 'Unclosed string';
-       }
-       if (source.charAt(index) === '\\' && source.charAt(index+1) === startChar) {
-               source = source.slice(0, index) + source.slice(index + 1);
-               escapes++;
-       }
-    }
-
-    return {
-        type: 'string',
-        stringChar: startChar,
-        source: source.slice(0, index+1),
-        length: index + escapes + 1
-    };
 }
 
 function lexWord(source){
