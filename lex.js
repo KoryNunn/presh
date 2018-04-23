@@ -1,14 +1,14 @@
 var operators = require('./operators');
 
 function lexString(source){
-    var stringMatch = source.match(/^["'](?:[^'"\\]|\\.)*["']/);
+    var stringMatch = source.match(/^((["'])(?:[^\\]|\\.)*?\2)/);
 
     if(stringMatch){
         return {
             type: 'string',
-            stringChar: stringMatch[0].charAt(0),
-            source: stringMatch[0].replace(/\\(.)/g, "$1"),
-            length: stringMatch[0].length
+            stringChar: stringMatch[1].charAt(0),
+            source: stringMatch[1].replace(/\\(.)/g, "$1"),
+            length: stringMatch[1].length
         };
     }
 }

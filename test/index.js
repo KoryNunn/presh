@@ -70,6 +70,7 @@ testExpression('Strings: "foo"', '"foo"', 'foo');
 testExpression('Strings: \'foo\'', '\'foo\'', 'foo');
 testExpression('Strings: Escaping', '"foo \\" bar"', 'foo \" bar');
 testExpression('Strings: Escape Escaping', '"foo \\\\\\" bar"', 'foo \\\" bar');
+testExpression('Strings: Mixed string tokens', '"foo\'s"', 'foo\'s');
 
 testExpression('Null:', 'null', null);
 testExpression('Undefined:', 'undefined', undefined);
