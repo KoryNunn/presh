@@ -167,6 +167,7 @@ testExpression('Spread concat', '[1 2 3 ...[4..6]]', [1, 2, 3, 4, 5, 6]);
 
 testExpression('Slice', 'slice([1..10] 3 4)', [4]);
 testExpression('Find', 'find([1..10] (item){ item === 6 })', 6);
+testExpression('indexOf', 'indexOf([1..10] 6)', 5);
 
 testExpression('String', 'String(1)', "1");
 testExpression('Number', 'Number("1")', 1);

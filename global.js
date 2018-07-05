@@ -9,8 +9,8 @@ module.exports = {
     find: function(items, fn){
         return items.find(fn);
     },
-    indexOf: function(items, fn){
-        return items.indexOf(fn);
+    indexOf: function(items, value){
+        return items.indexOf(value);
     },
     map: function(items, fn){
         return items.map(fn);
