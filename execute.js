@@ -199,10 +199,7 @@ function object(token, scope){
                 return;
             }
 
-
-            Object.keys(source).forEach(function(key){
-                result[key] = source[key];
-            });
+            Object.assign(result, source);
             continue;
         }else if(child.name === 'delete'){
             var targetIdentifier = child.right;
