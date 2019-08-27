@@ -88,7 +88,7 @@ function lexNumber(source){
 }
 
 function lexComment(source){
-    var match = source.match(/^(\/\*[^]*?\/)/);
+    var match = source.match(/^(\/\*[^]*?\*\/)/);
 
     if(!match){
         return;

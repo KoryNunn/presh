@@ -49,6 +49,10 @@ testExpression.only = executeTest.bind(null, test.only);
 testExpression('Booleans: true', 'true', true);
 testExpression('Booleans: false', 'false', false);
 
+testExpression('Comments: /*foo*/', '/*foo*/', undefined);
+testExpression('Comments: /*foo/bar*/', '/*foo/bar*/', undefined);
+
+
 testExpression('Numbers: 1', '1', 1);
 testExpression('Numbers: -1', '-1', -1);
 testExpression('Numbers: 1.1', '1.1', 1.1);
