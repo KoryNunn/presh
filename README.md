@@ -1,5 +1,11 @@
 # Presh
 
+[![Build Status](https://travis-ci.org/korynunn/presh.svg?branch=master)](https://travis-ci.org/korynunn/presh)
+[![David DM](https://david-dm.org/korynunn/presh.svg)](https://david-dm.org/korynunn/presh)
+![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/korynunn/presh)
+[![GitHub package.json version](https://img.shields.io/github/package-json/v/korynunn/presh)](https://github.com/korynunn/presh/releases)
+[![GitHub](https://img.shields.io/github/license/korynunn/presh)](https://github.com/korynunn/presh/blob/master/LICENSE)
+
 An ex'presh'n langauge.. for safe evaluation of arbitrary functionality in javascript.
 
 ## Goals
