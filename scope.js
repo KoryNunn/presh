@@ -20,7 +20,7 @@ Scope.prototype.throw = function(message){
 };
 Scope.prototype.get = function(key){
     var scope = this;
-    while(scope && !scope.__scope__.hasOwnProperty(key)){
+    while(scope && !Object.hasOwnProperty.call(scope.__scope__, key)){
         scope = scope.__outerScope__;
     }
     return scope && toValue.value(scope.__scope__[key], this);

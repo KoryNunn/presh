@@ -1,5 +1,6 @@
 var operators = require('./operators'),
     template = require('string-template'),
+    stableSort = require('stable'),
     errorTemplate = 'Parse error,\n{message},\nAt {index} "{snippet}"',
     snippetTemplate = '-->{0}<--';
 
@@ -375,10 +376,9 @@ var parsers = [
 ];
 
 function parseOperators(ast){
-    ast.filter(function(token){
+    stableSort(ast.filter(function(token){
         return token.type === 'operator';
-    })
-    .sort(function(a,b){
+    }), function(a,b){
         if(a.operator.precedence === b.operator.precedence && a.operator.associativity === 'right'){
             return 1;
         }
