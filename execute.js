@@ -130,7 +130,7 @@ function getProperty(token, scope, target, accessor){
         return;
     }
 
-    var result = target.hasOwnProperty(accessor) ? target[accessor] : undefined;
+    var result = Object.hasOwnProperty.call(target, accessor) ? target[accessor] : undefined;
 
     return result;
 }
