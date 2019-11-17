@@ -126,6 +126,24 @@ testExpression('Spread negatives reverse', '[2..-2]', [2, 1, 0, -1, -2]);
 testExpression('Spread non-number', '[(0)..2]', [0, 1, 2]);
 testExpression('Spread complex', '(a){[a..a*2]}(3)', [3, 4, 5, 6]);
 
+testExpression('Constant assignment', 'a = 2; a', 2);
+
+test('Attempted constant reassignment', function(t){
+    t.plan(2);
+
+    var result = presh('a = 2; a = 3;');
+
+    t.ok(result.error, 'did error');
+    t.notOk(result.value, 'did not return a value');
+});
+
+test('assignment to non-identifier', function(t){
+    t.plan(1);
+
+    t.throws(function(){
+        presh('a.b = 2');
+    }, 'Threw a parse error');
+});
 
 testExpression('Objects', '{}', {});
 testExpression('Objects with shallow content', '{a:1}', {a: 1});
@@ -140,6 +158,21 @@ testExpression('indexOf', '{ index: 0 }.index', 0);
 
 testExpression('Array', '[1 2 3]', [1,2,3]);
 testExpression('Array concat', '[1 2 3 ...[4 5 6]]', [1, 2, 3, 4, 5, 6]);
+testExpression('Range', '[1 .. 4]', [1, 2, 3, 4]);
+
+test('Range cannot be infinite', function(t){
+    t.plan(4);
+
+    var result1 = presh('[1 .. Infinity]');
+
+    t.ok(result1.error, 'did error');
+    t.notOk(result1.value, 'did not return a value');
+
+    var result2 = presh('[-Infinity .. 0]');
+
+    t.ok(result2.error, 'did error');
+    t.notOk(result2.value, 'did not return a value');
+});
 
 testExpression('Expression 1', '(x){x}', function(x){return x;}, functionallyIdentical(function(fn){
     return fn(1);
@@ -222,4 +255,23 @@ test('and first error', function(t){
 
     t.ok(result.error, 'did error');
     t.notOk(result.value, 'did not return a value');
+});
+
+test('Example program', function(t){
+    t.plan(2);
+
+    var result = presh(`
+        a = (){ 1 };
+
+        someFunction(){
+            b = a();
+
+            b;
+        }
+
+        someFunction()
+    `);
+
+    t.notOk(result.error, 'did not error');
+    t.equal(result.value, 1, 'Got expected result');
 });

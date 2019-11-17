@@ -263,6 +263,12 @@ module.exports = {
             precedence: 12
         }
     },
+    '=': {
+        binary: {
+            name: 'assignment',
+            precedence: 12
+        }
+    },
     '?': {
         trinary: {
             name: 'ternary',
