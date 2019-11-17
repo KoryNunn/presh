@@ -1,6 +1,7 @@
 var Scope = require('./scope'),
     toValue = require('./toValue'),
-    isInstance = require('is-instance');
+    isInstance = require('is-instance'),
+    preshFunctions = new WeakMap();
 
 var reservedKeywords = {
     'true': true,
@@ -37,8 +38,9 @@ function functionCall(token, scope){
         return;
     }
 
-    if(fn.__preshFunction__){
-        var result = fn.__preshFunction__.apply(functionToken.context, resolveSpreads(token.content, scope));
+    if(preshFunctions.has(fn)){
+        var result = preshFunctions.get(fn).apply(functionToken.context, resolveSpreads(token.content, scope));
+
         if(result.error){
             scope.throw(result.error)
         }
@@ -79,7 +81,7 @@ function functionExpression(token, scope){
         return fn.apply(this, arguments).value;
     }
 
-    resultFn.__preshFunction__ = fn;
+    preshFunctions.set(resultFn, fn);
 
     return resultFn;
 }
@@ -175,7 +177,7 @@ function set(token, scope){
             result = [];
 
         if(Math.abs(start) === Infinity || Math.abs(end) === Infinity){
-            scope.throw('Range vaules can not be infinite');
+            scope.throw('Range values can not be infinite');
             return;
         }
 
