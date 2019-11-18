@@ -4,7 +4,7 @@
   "description": "An ex'presh'n langauge.. for safe evaluation of arbitrary functionality in javascript.",
   "main": "index.js",
   "bin" : {
-    "presh" : "./bin/presh" }
+    "presh": "./bin/presh"
   },
   "scripts": {
     "test": "node ./test && node ./test/cli.js",
