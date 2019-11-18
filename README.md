@@ -102,6 +102,13 @@ result = presh(expression, scope);
 
 ```
 
+### With cli
+You can use the cli to run a script:
+```
+npm i -g presh
+presh -e '1 + 1'
+```
+
 ## Syntax
 
 presh syntax is similar to javascript, but a little more weighted to functional programming.

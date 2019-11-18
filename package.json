@@ -3,8 +3,11 @@
   "version": "1.7.3",
   "description": "An ex'presh'n langauge.. for safe evaluation of arbitrary functionality in javascript.",
   "main": "index.js",
+  "bin" : {
+    "presh" : "./bin/presh" }
+  },
   "scripts": {
-    "test": "node ./test",
+    "test": "node ./test && node ./test/cli.js",
     "watch": "watchify test -o test/index.browser.js -d",
     "watchExample": "watchify example/index.js -o example/index.browser.js -d"
   },
@@ -20,6 +23,7 @@
   "dependencies": {
     "flat-merge": "^1.0.0",
     "is-instance": "^1.0.1",
+    "minimist": "^1.2.0",
     "stable": "^0.1.8",
     "string-template": "^0.2.1"
   },
