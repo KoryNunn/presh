@@ -115,7 +115,20 @@ presh syntax is similar to javascript, but a little more weighted to functional 
 
 Key differences from javascript:
 
- - no commas
+### No commas
+
+```
+// Function definition
+doSomething(1 2 3){
+  ...
+}
+
+// Function call
+doSomething(1 2 3)
+
+// Array literal
+[1 2 3]
+```
 
 ### Function Expression
 
