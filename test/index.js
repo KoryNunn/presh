@@ -29,11 +29,13 @@ function executeTest(test, name, expression, scope, expected, comparitor){
     test(name, function(t){
         t.plan(1);
 
-        presh(expression, scope || {
+        var result = presh(expression, scope || {
             bar: {
                 baz: 'baz'
             }
-        }).value(function(error, value){
+        })
+
+        result.value(function(error, value){
             if(comparitor){
                 righto.from(comparitor(value, expected))
                 .get(result => t.ok(result))();
@@ -52,6 +54,10 @@ testExpression.skip = executeTest.bind(null, test.skip);
 
 testExpression('Booleans: true', 'true', true);
 testExpression('Booleans: false', 'false', false);
+
+testExpression('Comments: /*foo*/', '/*foo*/', undefined);
+testExpression('Comments: /*foo/bar*/', '/*foo/bar*/', undefined);
+
 
 testExpression('Numbers: 1', '1', 1);
 testExpression('Numbers: -1', '-1', -1);
@@ -73,7 +79,8 @@ testExpression('Precedence: + binds binary without any delimiter first', '1+1', 
 testExpression('Strings: "foo"', '"foo"', 'foo');
 testExpression('Strings: \'foo\'', '\'foo\'', 'foo');
 testExpression('Strings: Escaping', '"foo \\" bar"', 'foo \" bar');
-testExpression('Strings: Escape Escaping', '"foo \\\\" bar"', 'foo \\\" bar');
+testExpression('Strings: Escape Escaping', '"foo \\\\\\" bar"', 'foo \\\" bar');
+testExpression('Strings: Mixed string tokens', '"foo\'s"', 'foo\'s');
 
 testExpression('Null:', 'null', null);
 testExpression('Undefined:', 'undefined', undefined);
@@ -125,6 +132,7 @@ testExpression('Spread negatives reverse', '[2..-2]', [2, 1, 0, -1, -2]);
 testExpression('Spread non-number', '[(0)..2]', [0, 1, 2]);
 testExpression('Spread complex', '(a){[a..a*2]}(3)', [3, 4, 5, 6]);
 
+
 testExpression('Objects', '{}', {});
 testExpression('Objects with shallow content', '{a:1}', {a: 1});
 testExpression('Objects with shallow content {a:1 b:1}', '{a:1 b:1}', {a: 1, b: 1});
@@ -167,6 +175,13 @@ testExpression('Named expression 2', 'foo(x){x} bar(fn){fn("world")} bar(foo)', 
 
 testExpression('Spread apply', '(a b c){a + b + c}(...[0..2])', 3);
 testExpression('Spread concat', '[1 2 3 ...[4..6]]', [1, 2, 3, 4, 5, 6]);
+
+testExpression('Slice', 'slice([1..10] 3 4)', [4]);
+testExpression('Find', 'find([1..10] (item){ item === 6 })', 6);
+testExpression('indexOf', 'indexOf([1..10] 6)', 5);
+
+testExpression('String', 'String(1)', "1");
+testExpression('Number', 'Number("1")', 1);
 
 testExpression('dots and that', 'thing.bar()', {thing: { bar: function(){return 'foo';}}}, 'foo');
 testExpression('dots and that with brace accessor', 'thing["bar"]()', {thing: { bar: function(){return 'foo';}}}, 'foo');

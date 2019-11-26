@@ -1,5 +1,10 @@
 # Presh
 
+[![Build Status](https://travis-ci.org/korynunn/presh.svg?branch=master)](https://travis-ci.org/korynunn/presh)
+![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/korynunn/presh)
+[![GitHub package.json version](https://img.shields.io/github/package-json/v/korynunn/presh)](https://github.com/korynunn/presh/releases)
+[![GitHub](https://img.shields.io/github/license/korynunn/presh)](https://github.com/korynunn/presh/blob/master/LICENSE)
+
 An ex'presh'n langauge.. for safe evaluation of arbitrary functionality in javascript.
 
 ## Goals
@@ -97,13 +102,33 @@ result = presh(expression, scope);
 
 ```
 
+### With cli
+You can use the cli to run a script:
+```
+npm i -g presh
+presh -e '1 + 1'
+```
+
 ## Syntax
 
 presh syntax is similar to javascript, but a little more weighted to functional programming.
 
 Key differences from javascript:
 
- - no commas
+### No commas
+
+```
+// Function definition
+doSomething(1 2 3){
+  ...
+}
+
+// Function call
+doSomething(1 2 3)
+
+// Array literal
+[1 2 3]
+```
 
 ### Function Expression
 

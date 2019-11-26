@@ -130,7 +130,7 @@ function getProperty(token, scope, target, accessor){
         return;
     }
 
-    var result = target.hasOwnProperty(accessor) ? target[accessor] : undefined;
+    var result = Object.hasOwnProperty.call(target, accessor) ? target[accessor] : undefined;
 
     return result;
 }
@@ -213,9 +213,7 @@ function object(token, scope){
                     return;
                 }
 
-                Object.keys(source).forEach(function(key){
-                    result[key] = source[key];
-                });
+                Object.assign(result, source);
             });
         }else if(child.name === 'delete'){
             return righto.sync(function(){
@@ -293,6 +291,10 @@ function executeToken(token, scope){
 
 function execute(tokens, scope, debug){
     scope = scope instanceof Scope ? scope : new Scope(scope, debug);
+
+    if(!tokens.length){
+        return toValue(undefined, scope);
+    }
 
     var result;
     for (var i = 0; i < tokens.length; i++) {

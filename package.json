@@ -1,10 +1,13 @@
 {
   "name": "presh",
-  "version": "1.6.3",
+  "version": "1.7.3",
   "description": "An ex'presh'n langauge.. for safe evaluation of arbitrary functionality in javascript.",
   "main": "index.js",
+  "bin": {
+    "presh": "./bin/presh"
+  },
   "scripts": {
-    "test": "node ./test",
+    "test": "node ./test && node ./test/cli.js",
     "watch": "watchify test -o test/index.browser.js -d",
     "watchExample": "watchify example/index.js -o example/index.browser.js -d"
   },
@@ -21,6 +24,8 @@
     "flat-merge": "^1.0.0",
     "is-instance": "^1.0.1",
     "righto": "^4.0.0",
+    "minimist": "^1.2.0",
+    "stable": "^0.1.8",
     "string-template": "^0.2.1"
   },
   "directories": {

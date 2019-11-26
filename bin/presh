@@ -1,0 +1,44 @@
+#!/usr/bin/env node
+var fs = require('fs');
+var path = require('path');
+var argv = require('minimist')(process.argv.slice(2));
+
+var presh = require('../')
+
+var help = `
+Presh CLI
+
+Nothing to do. You can either:
+- Pass a file: 'presh filename.pr'
+- Pass an expression: 'presh --exec "1 + 1"'
+- Pass an e: 'presh -e "1 + 1"'
+`
+
+var expression
+if (argv.exec || argv.e) {
+  expression = argv.exec || argv.e
+}
+
+if (argv._.length > 0) {
+  var filePath = path.resolve(process.cwd(), argv._[0])
+  if (!fs.existsSync(filePath)) {
+    return console.error('Could not find file: ' + filePath)
+  }
+  expression = fs.readFileSync(filePath, 'utf8')
+}
+
+if (!argv.exec && !argv.e && !argv._.length > 0) {
+  return console.log(help)
+}
+
+var result = presh(expression);
+if(result.error){
+    throw error;
+}
+result.value(function(error, result){
+    if(error){
+        throw error
+    }
+
+    console.log(result)
+});
