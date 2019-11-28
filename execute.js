@@ -166,6 +166,10 @@ function set(token, scope){
             var reverse = end < start,
                 result = [];
 
+            if (scope.incrementCycles(end - start)) {
+                return callback(scope.hasError());
+            }
+
             for (var i = start; reverse ? i >= end : i <= end; reverse ? i-- : i++) {
                 result.push(i);
             }
@@ -285,6 +289,8 @@ function executeToken(token, scope){
     if(scope._error){
         return {error: scope._error};
     }
+
+    scope.incrementCycles(1);
 
     return toValue(handlers[token.type](token, scope), scope);
 }

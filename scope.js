@@ -6,9 +6,13 @@ function wrapScope(__scope__){
     return scope;
 }
 
-function Scope(oldScope, debug){
+function Scope(oldScope, options={}){
     this.__scope__ = {};
-    this._debug = debug;
+    this._debug = options.debug;
+
+    this.cycleLimit = options.cycleLimit;
+    this.cycleCount = 0;
+
     if(oldScope){
         this.__outerScope__ = oldScope instanceof Scope ? oldScope : wrapScope(oldScope);
         this._debug = this.__outerScope__._debug;
@@ -17,6 +21,14 @@ function Scope(oldScope, debug){
 Scope.prototype.throw = function(message){
     this._error = new Error('Presh execution error: ' + message);
     this._error.scope = this;
+};
+Scope.prototype.incrementCycles = function(amount=1){
+    this.cycleCount = this.cycleCount + amount;
+    if(this.cycleLimit && this.cycleCount > this.cycleLimit) {
+        this._error = new Error('Presh execution error: cycle limit of ' + amount + ' was reached');
+        this._error.scope = this;
+        return true
+    }
 };
 Scope.prototype.get = function(key){
     var scope = this;

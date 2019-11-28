@@ -353,3 +353,14 @@ test('async scope fn', function(t){
         t.equal(value, 10, 'evaluated async scoped function');
     });
 });
+
+test('cycle limits', function(t){
+    t.plan(2);
+
+    var result = presh('[1..Infinity]', {}, {cycleLimit: 1000});
+
+    result.value(function(error, value){
+        t.equal(error.message, 'Presh execution error: cycle limit of Infinity was reached', 'throw correct message');
+        t.notOk(value);
+    });
+});
