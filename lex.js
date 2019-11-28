@@ -102,6 +102,7 @@ function lexComment(source){
 }
 
 var characters = {
+    ',': 'comma',
     '.': 'period',
     ';': 'semicolon',
     '{': 'braceOpen',
