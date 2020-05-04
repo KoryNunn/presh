@@ -340,6 +340,13 @@ function parsePeriod(tokens, ast){
     }
 }
 
+function parseComma(tokens, ast){
+    if(tokens[0].type === 'comma'){
+        tokens.shift();
+        return true;
+    }
+}
+
 function parseString(tokens, ast){
     if(tokens[0].type === 'string'){
         ast.push({
@@ -367,6 +374,7 @@ var parsers = [
     parseNumber,
     parseString,
     parseIdentifier,
+    parseComma,
     parsePeriod,
     parseParenthesis,
     parseSet,

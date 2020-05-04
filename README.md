@@ -121,7 +121,7 @@ presh syntax is similar to javascript, but a little more weighted to functional 
 
 Key differences from javascript:
 
-### No commas
+### No commas required
 
 ```
 // Function definition

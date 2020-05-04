@@ -151,15 +151,22 @@ test('assignment to non-identifier', function(t){
 testExpression('Objects', '{}', {});
 testExpression('Objects with shallow content', '{a:1}', {a: 1});
 testExpression('Objects with shallow content {a:1 b:1}', '{a:1 b:1}', {a: 1, b: 1});
+testExpression('Objects with shallow content with commas {a:1, b:1}', '{a:1, b:1}', {a: 1, b: 1});
 testExpression('Objects with deep content', '{a: {b:1}}', {a: {b: 1}});
 testExpression('Objects with identifiers', '(x){ {x} }(6)', {x: 6});
 testExpression('Objects with evaluated keys', '{[2+2]:true}', {4: true});
 testExpression('Objects with spread', '(a){ {...a b: 2} }({a: 1})', {a:1, b:2});
+testExpression('Objects with spread with commas', '(a){ {...a, b: 2} }({a: 1})', {a:1, b:2});
 testExpression('Objects with delete', '{a: 1 delete a}', {});
+testExpression('Objects with delete with commas', '{a: 1, delete a}', {});
 testExpression('Objects with spread delete', '(a){ {...a b: 2 delete c} }({a: 1 c: 3})', {a:1, b:2});
+testExpression('Objects with spread delete with commas', '(a){ {...a, b: 2, delete c} }({a: 1, c: 3})', {a:1, b:2});
 testExpression('indexOf', '{ index: 0 }.index', 0);
+testExpression('tilde bug', '~indexOf([0..3] 1)', { indexOf: (a, b) => a.indexOf(b) }, -2);
+testExpression('tilde bug with commas', '~indexOf([0..3], 1)', { indexOf: (a, b) => a.indexOf(b) }, -2);
 
 testExpression('Array', '[1 2 3]', [1,2,3]);
+testExpression('Array with commas', '[1, 2, 3]', [1,2,3]);
 testExpression('Array concat', '[1 2 3 ...[4 5 6]]', [1, 2, 3, 4, 5, 6]);
 testExpression('Range', '[1 .. 4]', [1, 2, 3, 4]);
 
@@ -186,6 +193,9 @@ testExpression('Expression 2', '(x){x + 1}', function(x){return x+1;}, functiona
 testExpression('Expression  3', '(a b){a + b}', function(a, b){return a + b;}, functionallyIdentical(function(fn){
     return fn(1, 3);
 }));
+testExpression('Expression  3 wit commas', '(a, b){a + b}', function(a, b){return a + b;}, functionallyIdentical(function(fn){
+    return fn(1, 3);
+}));
 
 testExpression('Expression 4',
     '(...a){ map(a (x){x+1}) }',
@@ -203,7 +213,9 @@ testExpression('Named expression 1', 'foo(x){x} foo("hello")', 'hello');
 testExpression('Named expression 2', 'foo(x){x} bar(fn){fn("world")} bar(foo)', 'world');
 
 testExpression('Spread apply', '(a b c){a + b + c}(...[0..2])', 3);
+testExpression('Spread apply with commas', '(a, b, c){a + b + c}(...[0..2])', 3);
 testExpression('Spread concat', '[1 2 3 ...[4..6]]', [1, 2, 3, 4, 5, 6]);
+testExpression('Spread concat with commas', '[1, 2, 3, ...[4..6]]', [1, 2, 3, 4, 5, 6]);
 
 testExpression('Slice', 'slice([1..10] 3 4)', [4]);
 testExpression('Find', 'find([1..10] (item){ item === 6 })', 6);
@@ -220,6 +232,7 @@ testExpression('context with brace accessor', 'thing["bar"]()', {thing: { majigg
 testExpression('has error', 'thing.stuff()', {thing: { bar: function(){return 'foo';}}}, undefined);
 
 testExpression('catches error', 'map(null null)', undefined);
+testExpression('catches error with commas', 'map(null, null)', undefined);
 testExpression('math is global', 'math.floor(foo) + math.abs(bar)', {foo: 123.456, bar: -123}, 246);
 
 test('errors', function(t){
