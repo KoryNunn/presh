@@ -344,7 +344,7 @@ function parseString(tokens, ast){
     if(tokens[0].type === 'string'){
         ast.push({
             type: 'string',
-            value: tokens.shift().source.slice(1,-1)
+            value: JSON.parse('"' + tokens.shift().source.slice(1,-1) + '"')
         });
         return true;
     }

@@ -73,8 +73,11 @@ testExpression('Precedence: + binds binary without any delimiter first', '1+1', 
 testExpression('Strings: "foo"', '"foo"', 'foo');
 testExpression('Strings: \'foo\'', '\'foo\'', 'foo');
 testExpression('Strings: Escaping', '"foo \\" bar"', 'foo \" bar');
-testExpression('Strings: Escape Escaping', '"foo \\\\\\" bar"', 'foo \\\" bar');
+testExpression('Strings: Escape Escaping', '"foo \\\\\\\\ bar"', 'foo \\\\ bar');
+testExpression('Strings: Escape String Escaping', '"foo \\\\\\\\"', 'foo \\\\');
 testExpression('Strings: Mixed string tokens', '"foo\'s"', 'foo\'s');
+testExpression('Strings: Newline', '"\\n"', '\n');
+testExpression('Strings: Newline', '"\\\\n"', '\\n');
 
 testExpression('Null:', 'null', null);
 testExpression('Undefined:', 'undefined', undefined);

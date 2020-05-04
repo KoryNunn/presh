@@ -7,7 +7,7 @@ function lexString(source){
         return {
             type: 'string',
             stringChar: stringMatch[1].charAt(0),
-            source: stringMatch[1].replace(/\\(.)/g, "$1"),
+            source: stringMatch[1],//.replace(/\\(['"])/g, "$1"),
             length: stringMatch[1].length
         };
     }
