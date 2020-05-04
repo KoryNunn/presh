@@ -18,7 +18,8 @@
     "debounce": "^1.0.0",
     "deep-equal": "^1.0.0",
     "same-value": "^1.0.0",
-    "tape": "^4.2.0"
+    "tape": "^4.2.0",
+    "watchify": "^3.11.1"
   },
   "dependencies": {
     "flat-merge": "^1.0.0",
