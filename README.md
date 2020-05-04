@@ -25,10 +25,16 @@ halve(x){ x / 2 }
 halve(2) -> 1
 ```
 
-No assignment.
+Constant-only assignment.
 
 ```
-x = 5 <- Nope!
+x = 5 <- Yep
+
+x = 4 <- Nope!
+
+a = { foo: 'bar' } <- Sure.
+
+a.foo = 'baz' <- Nope!
 
 var, let, const <- Nope nope nope!
 

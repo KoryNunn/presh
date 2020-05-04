@@ -422,6 +422,10 @@ function parseOperators(ast){
             parseError('unexpected token.', token);
         }
 
+        if(operator.name === 'assignment' && left[0].type !== 'identifier'){
+            parseError('Unexpected token.', token);
+        }
+
         if(left){
             token.left = left[0];
         }
