@@ -123,6 +123,8 @@ Key differences from javascript:
 
 ### No commas required
 
+Comma's are delimiters.
+
 ```
 // Function definition
 doSomething(1 2 3){

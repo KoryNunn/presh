@@ -193,7 +193,7 @@ testExpression('Expression 2', '(x){x + 1}', function(x){return x+1;}, functiona
 testExpression('Expression  3', '(a b){a + b}', function(a, b){return a + b;}, functionallyIdentical(function(fn){
     return fn(1, 3);
 }));
-testExpression('Expression  3 wit commas', '(a, b){a + b}', function(a, b){return a + b;}, functionallyIdentical(function(fn){
+testExpression('Expression  3 with commas', '(a, b){a + b}', function(a, b){return a + b;}, functionallyIdentical(function(fn){
     return fn(1, 3);
 }));
 
@@ -211,6 +211,7 @@ testExpression('Expression 4',
 
 testExpression('Named expression 1', 'foo(x){x} foo("hello")', 'hello');
 testExpression('Named expression 2', 'foo(x){x} bar(fn){fn("world")} bar(foo)', 'world');
+testExpression('commas seperate anonymous expression from identifiers', 'a = 1 foo(a b){ a + b() } foo(a,(){ 1 })', 2);
 
 testExpression('Spread apply', '(a b c){a + b + c}(...[0..2])', 3);
 testExpression('Spread apply with commas', '(a, b, c){a + b + c}(...[0..2])', 3);

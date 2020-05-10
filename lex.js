@@ -102,7 +102,6 @@ function lexComment(source){
 }
 
 var characters = {
-    ',': 'comma',
     '.': 'period',
     ';': 'semicolon',
     '{': 'braceOpen',
@@ -172,7 +171,7 @@ function lexSpread(source){
 }
 
 function lexDelimiter(source){
-    var match = source.match(/^[\s\n]+/);
+    var match = source.match(/^[\s\n,]+/);
 
     if(!match){
         return;
