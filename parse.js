@@ -1,26 +1,9 @@
 var operators = require('./operators'),
-    template = require('string-template'),
     stableSort = require('stable'),
-    errorTemplate = 'Parse error,\n{message},\nAt {index} "{snippet}"',
-    snippetTemplate = '-->{0}<--';
+    printError = require('./printError');
 
 function parseError(message, token){
-    var start = Math.max(token.index - 50, 0),
-        errorIndex = Math.min(50, token.index),
-        surroundingSource = token.sourceRef.source.slice(start, token.index + 50),
-        errorMessage = template(errorTemplate, {
-            message: message,
-            index: token.index,
-            snippet: [
-                (start === 0 ? '' : '...\n'),
-                surroundingSource.slice(0, errorIndex),
-                template(snippetTemplate, surroundingSource.slice(errorIndex, errorIndex+1)),
-                surroundingSource.slice(errorIndex + 1) + '',
-                (surroundingSource.length < 100 ? '' : '...')
-            ].join('')
-        });
-
-    throw errorMessage;
+    throw printError(message, token);
 }
 
 function findNextNonDelimiter(tokens){
@@ -67,6 +50,7 @@ function lastTokenMatches(ast, types, pop){
 function parseIdentifier(tokens, ast){
     if(tokens[0].type === 'word'){
         ast.push({
+            sourceToken: tokens[0],
             type: 'identifier',
             name: tokens.shift().source
         });
@@ -77,6 +61,7 @@ function parseIdentifier(tokens, ast){
 function parseNumber(tokens, ast){
     if(tokens[0].type === 'number'){
         ast.push({
+            sourceToken: tokens[0],
             type: 'number',
             value: parseFloat(tokens.shift().source)
         });
@@ -86,6 +71,7 @@ function parseNumber(tokens, ast){
 
 function functionCall(target, content){
     return {
+        sourceToken: target,
         type: 'functionCall',
         target: target,
         content: content
@@ -121,6 +107,7 @@ function parseParenthesis(tokens, ast) {
         astNode = functionCall(target, content);
     }else{
         astNode = {
+            sourceToken: openToken,
             type: 'parenthesisGroup',
             content: content
         };
@@ -141,12 +128,13 @@ function parseParameters(functionCall){
     });
 }
 
-function namedFunctionExpression(functionCall, content){
+function namedFunctionExpression(sourceToken, functionCall, content){
     if(functionCall.target.type !== 'identifier'){
         return false;
     }
 
     return {
+        sourceToken,
         type: 'functionExpression',
         identifier: functionCall.target,
         parameters: parseParameters(functionCall),
@@ -154,8 +142,9 @@ function namedFunctionExpression(functionCall, content){
     };
 }
 
-function anonymousFunctionExpression(parenthesisGroup, content){
+function anonymousFunctionExpression(sourceToken, parenthesisGroup, content){
     return {
+        sourceToken,
         type: 'functionExpression',
         parameters: parseParameters(parenthesisGroup),
         content: content
@@ -190,11 +179,12 @@ function parseBlock(tokens, ast){
         astNode;
 
     if(functionCall){
-        astNode = namedFunctionExpression(functionCall, content);
+        astNode = namedFunctionExpression(targetToken, functionCall, content);
     }else if(parenthesisGroup){
-        astNode = anonymousFunctionExpression(parenthesisGroup, content);
+        astNode = anonymousFunctionExpression(targetToken, parenthesisGroup, content);
     }else{
         astNode = {
+            sourceToken: targetToken,
             type: 'braceGroup',
             content: content
         };
@@ -235,6 +225,7 @@ function parseSet(tokens, ast) {
 
     if(target){
         ast.push({
+            sourceToken: openToken,
             type: 'accessor',
             target: target,
             content: content
@@ -244,6 +235,7 @@ function parseSet(tokens, ast) {
     }
 
     ast.push({
+        sourceToken: openToken,
         type: 'set',
         content: content
     });
@@ -285,6 +277,7 @@ function parseOperator(tokens, ast){
             )
         ){
             ast.push({
+                sourceToken: token,
                 type: 'operator',
                 name: operatorsForSource.binary.name,
                 operator: operatorsForSource.binary,
@@ -296,6 +289,7 @@ function parseOperator(tokens, ast){
 
         if(operatorsForSource.unary){
             ast.push({
+                sourceToken: token,
                 type: 'operator',
                 name: operatorsForSource.unary.name,
                 operator: operatorsForSource.unary,
@@ -308,6 +302,7 @@ function parseOperator(tokens, ast){
 
         if(operatorsForSource.trinary && !startOfStatement){
             ast.push({
+                sourceToken: token,
                 type: 'operator',
                 name: operatorsForSource.trinary.name,
                 operator: operatorsForSource.trinary,
@@ -331,6 +326,7 @@ function parsePeriod(tokens, ast){
         }
 
         ast.push({
+            sourceToken: token,
             type: 'period',
             left: ast.pop(),
             right: parseToken([right]).pop()
@@ -343,6 +339,7 @@ function parsePeriod(tokens, ast){
 function parseString(tokens, ast){
     if(tokens[0].type === 'string'){
         ast.push({
+            sourceToken: tokens[0],
             type: 'string',
             value: tokens.shift().source.slice(1,-1)
         });
@@ -352,8 +349,8 @@ function parseString(tokens, ast){
 
 function parseSemicolon(tokens, ast){
     if(tokens[0].type === 'semicolon'){
-        tokens.shift();
         ast.push({
+            sourceToken: tokens.shift(),
             type: 'statement',
             content: [ast.pop()]
         });

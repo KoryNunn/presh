@@ -199,6 +199,13 @@ test('errors', function(t){
     t.notOk(result.value, 'did not return a value');
 });
 
+test('accessor errors', function(t){
+    t.plan(1);
+
+    var result = presh('foo.things.stuff');
+    t.ok(result.error.message.match(/-->.*<--/), 'Has helpful error');
+});
+
 testExpression('fizzbuzz', 'map([1..100](x){log((x%3?"":"Fizz")+(x%5?"":"Buzz")||x)})', (function(){
     var result = [];
 

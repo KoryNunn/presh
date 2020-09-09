@@ -1,6 +1,7 @@
 var Scope = require('./scope'),
     toValue = require('./toValue'),
-    isInstance = require('is-instance');
+    isInstance = require('is-instance'),
+    printError = require('./printError');
 
 var reservedKeywords = {
     'true': true,
@@ -108,7 +109,7 @@ function string(token){
 function getProperty(token, scope, target, accessor){
 
     if(!target || !(typeof target === 'object' || typeof target === 'function')){
-        scope.throw('target is not an object');
+        scope.throw(printError('target is not an object', token.sourceToken));
         return;
     }
 
