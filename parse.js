@@ -341,7 +341,7 @@ function parseString(tokens, ast){
         ast.push({
             sourceToken: tokens[0],
             type: 'string',
-            value: tokens.shift().source.slice(1,-1)
+            value: JSON.parse('"' + tokens.shift().source.slice(1,-1) + '"')
         });
         return true;
     }
@@ -417,6 +417,10 @@ function parseOperators(ast){
             right && right.length !== 1
         ){
             parseError('unexpected token.', token);
+        }
+
+        if(operator.name === 'assignment' && left[0].type !== 'identifier'){
+            parseError('Unexpected token.', token);
         }
 
         if(left){

@@ -1,9 +1,9 @@
 {
   "name": "presh",
-  "version": "1.7.3",
+  "version": "2.0.1",
   "description": "An ex'presh'n langauge.. for safe evaluation of arbitrary functionality in javascript.",
   "main": "index.js",
-  "bin" : {
+  "bin": {
     "presh": "./bin/presh"
   },
   "scripts": {
@@ -18,7 +18,8 @@
     "debounce": "^1.0.0",
     "deep-equal": "^1.0.0",
     "same-value": "^1.0.0",
-    "tape": "^4.2.0"
+    "tape": "^4.2.0",
+    "watchify": "^3.11.1"
   },
   "dependencies": {
     "flat-merge": "^1.0.0",

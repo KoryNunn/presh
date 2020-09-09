@@ -7,7 +7,7 @@ function lexString(source){
         return {
             type: 'string',
             stringChar: stringMatch[1].charAt(0),
-            source: stringMatch[1].replace(/\\(.)/g, "$1"),
+            source: stringMatch[1],//.replace(/\\(['"])/g, "$1"),
             length: stringMatch[1].length
         };
     }
@@ -171,7 +171,7 @@ function lexSpread(source){
 }
 
 function lexDelimiter(source){
-    var match = source.match(/^[\s\n]+/);
+    var match = source.match(/^[\s\n,]+/);
 
     if(!match){
         return;

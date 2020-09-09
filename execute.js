@@ -1,7 +1,8 @@
 var Scope = require('./scope'),
     toValue = require('./toValue'),
     isInstance = require('is-instance'),
-    printError = require('./printError');
+    printError = require('./printError'),
+    preshFunctions = new WeakMap();
 
 var reservedKeywords = {
     'true': true,
@@ -38,8 +39,14 @@ function functionCall(token, scope){
         return;
     }
 
-    if(fn.__preshFunction__){
-        return fn.apply(functionToken.context, resolveSpreads(token.content, scope));
+    if(preshFunctions.has(fn)){
+        var result = preshFunctions.get(fn).apply(functionToken.context, resolveSpreads(token.content, scope));
+
+        if(result.error){
+            scope.throw(result.error)
+        }
+
+        return result.value;
     }
 
     try{
@@ -64,22 +71,38 @@ function functionExpression(token, scope){
             functionScope.set(parameter.name, args[index]);
         });
 
-        return execute(token.content, functionScope).value;
+        return execute(token.content, functionScope);
     };
 
     if(token.identifier){
         scope.set(token.identifier.name, fn);
     }
 
-    fn.__preshFunction__ = true;
+    var resultFn = function(){
+        return fn.apply(this, arguments).value;
+    }
 
-    return fn;
+    preshFunctions.set(resultFn, fn);
+
+    return resultFn;
+}
+
+function assignment(token, scope){
+    if(scope.isDefined(token.left.name)){
+        scope.throw('Cannot reassign already defined identifier: ' + token.left.name);
+    }
+
+    var value = executeToken(token.right, scope).value;
+
+    scope.set(token.left.name, value);
+
+    return value;
 }
 
 function ternary(token, scope){
 
     if(scope._debug){
-        console.log('Executing operator: ' + operator.name, operator.left, operator.right);
+        console.log('Executing operator: ' + token.name, token.left, token.right);
     }
 
     return executeToken(token.left, scope).value ?
@@ -154,6 +177,11 @@ function set(token, scope){
             reverse = end < start,
             result = [];
 
+        if(Math.abs(start) === Infinity || Math.abs(end) === Infinity){
+            scope.throw('Range values can not be infinite');
+            return;
+        }
+
         for (var i = start; reverse ? i >= end : i <= end; reverse ? i-- : i++) {
             result.push(i);
         }
@@ -225,6 +253,7 @@ function object(token, scope){
 }
 
 var handlers = {
+    assignment: assignment,
     ternary: ternary,
     functionCall: functionCall,
     functionExpression: functionExpression,
