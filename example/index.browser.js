@@ -687,7 +687,7 @@ function lex(source, memoisedTokens) {
 
 
         if(source.length === previousLength){
-            throw 'Syntax error: Unable to determine next token in source: ' + source.slice(0, 100);
+            throw new Error('Syntax error: Unable to determine next token in source: ' + source.slice(0, 100));
         }
 
     } while (source);
