@@ -235,6 +235,7 @@ testExpression('has error', 'thing.stuff()', {thing: { bar: function(){return 'f
 testExpression('catches error', 'map(null null)', undefined);
 testExpression('catches error with commas', 'map(null, null)', undefined);
 testExpression('math is global', 'math.floor(foo) + math.abs(bar)', {foo: 123.456, bar: -123}, 246);
+testExpression('isNaN is global', 'isNaN(NaN)', true);
 
 test('errors', function(t){
     t.plan(2);
