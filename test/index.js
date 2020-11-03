@@ -190,12 +190,29 @@ testExpression('Expression 1', '(x){x}', function(x){return x;}, functionallyIde
 testExpression('Expression 2', '(x){x + 1}', function(x){return x+1;}, functionallyIdentical(function(fn){
     return fn(1);
 }));
-testExpression('Expression  3', '(a b){a + b}', function(a, b){return a + b;}, functionallyIdentical(function(fn){
+testExpression('Expression 3', '(a b){a + b}', function(a, b){return a + b;}, functionallyIdentical(function(fn){
     return fn(1, 3);
 }));
-testExpression('Expression  3 with commas', '(a, b){a + b}', function(a, b){return a + b;}, functionallyIdentical(function(fn){
+testExpression('Expression 3 with commas', '(a, b){a + b}', function(a, b){return a + b;}, functionallyIdentical(function(fn){
     return fn(1, 3);
 }));
+
+test('Can not have space between parenthesis and brackets', function(t){
+    t.plan(2);
+
+    var result1 = presh('test() {}');
+
+    t.ok(result1.error, 'did error');
+    t.notOk(result1.value, 'did not return a value');
+});
+
+test('brace groups beside non-parenthesis tokens are correctly parsed as object literals', function(t){
+    t.plan(1);
+
+    var result1 = presh('"foo"{}');
+
+    t.deepEqual(result1.value, {}, 'Last token was empty object declaration');
+});
 
 testExpression('Expression 4',
     '(...a){ map(a (x){x+1}) }',

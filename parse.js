@@ -156,7 +156,8 @@ function parseBlock(tokens, ast){
         return;
     }
 
-    var position = 0,
+    var wasDelimiterPrefixed = tokens[0].delimiterPrefix,
+        position = 0,
         opens = 1;
 
     while(++position, position <= tokens.length && opens){
@@ -174,8 +175,8 @@ function parseBlock(tokens, ast){
     var targetToken = tokens[0],
         content = parse(tokens.splice(0, position).slice(1,-1));
 
-    var functionCall = lastTokenMatches(ast, ['functionCall'], true),
-        parenthesisGroup = lastTokenMatches(ast, ['parenthesisGroup'], true),
+    var functionCall = !wasDelimiterPrefixed && lastTokenMatches(ast, ['functionCall'], true),
+        parenthesisGroup = !wasDelimiterPrefixed && lastTokenMatches(ast, ['parenthesisGroup'], true),
         astNode;
 
     if(functionCall){
@@ -187,7 +188,7 @@ function parseBlock(tokens, ast){
             sourceToken: targetToken,
             type: 'braceGroup',
             content: content
-        };
+        }
     }
 
     if(!astNode){
