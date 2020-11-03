@@ -206,6 +206,14 @@ test('Can not have space between parenthesis and brackets', function(t){
     t.notOk(result1.value, 'did not return a value');
 });
 
+test('brace groups beside non-parenthesis tokens are correctly parsed as object literals', function(t){
+    t.plan(1);
+
+    var result1 = presh('"foo"{}');
+
+    t.deepEqual(result1.value, {}, 'Last token was empty object declaration');
+});
+
 testExpression('Expression 4',
     '(...a){ map(a (x){x+1}) }',
     function(){
