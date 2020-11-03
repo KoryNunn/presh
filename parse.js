@@ -156,7 +156,8 @@ function parseBlock(tokens, ast){
         return;
     }
 
-    var position = 0,
+    var wasDelimiterPrefixed = tokens[0].delimiterPrefix,
+        position = 0,
         opens = 1;
 
     while(++position, position <= tokens.length && opens){
@@ -174,6 +175,15 @@ function parseBlock(tokens, ast){
     var targetToken = tokens[0],
         content = parse(tokens.splice(0, position).slice(1,-1));
 
+    if (wasDelimiterPrefixed || ast.length === 0) {
+        ast.push({
+            sourceToken: targetToken,
+            type: 'braceGroup',
+            content: content
+        })
+        return true;
+    }
+
     var functionCall = lastTokenMatches(ast, ['functionCall'], true),
         parenthesisGroup = lastTokenMatches(ast, ['parenthesisGroup'], true),
         astNode;
@@ -182,12 +192,6 @@ function parseBlock(tokens, ast){
         astNode = namedFunctionExpression(targetToken, functionCall, content);
     }else if(parenthesisGroup){
         astNode = anonymousFunctionExpression(targetToken, parenthesisGroup, content);
-    }else{
-        astNode = {
-            sourceToken: targetToken,
-            type: 'braceGroup',
-            content: content
-        };
     }
 
     if(!astNode){
