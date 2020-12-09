@@ -16,11 +16,12 @@ function lexString(source){
 function lexWord(source){
     var match = source.match(/^(?!\-)[\w-$]+/);
 
+
     if(!match){
         return;
     }
 
-    if(match in operators){
+    if(operators.hasOwnProperty(match[0])){
         return;
     }
 
@@ -214,7 +215,7 @@ function lex(source, memoisedTokens) {
         return [];
     }
 
-    if(memoisedTokens && memoisedTokens[source]){
+    if(memoisedTokens && memoisedTokens.hasOwnProperty(source)){
         return memoisedTokens[source].slice();
     }
 

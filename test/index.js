@@ -317,3 +317,12 @@ test('Example program', function(t){
     t.notOk(result.error, 'did not error');
     t.equal(result.value, 1, 'Got expected result');
 });
+
+test('overriden prototypical values', function(t){
+    t.plan(2);
+
+    var result = presh(`toString(1)`, { toString: (a) => String(1) });
+
+    t.notOk(result.error, 'did not error');
+    t.equal(result.value, '1', 'Got expected result');
+});

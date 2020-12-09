@@ -112,7 +112,7 @@ function ternary(token, scope){
 
 function identifier(token, scope){
     var name = token.name;
-    if(name in reservedKeywords){
+    if(reservedKeywords.hasOwnProperty(name)){
         return reservedKeywords[name];
     }
     if(!scope.isDefined(name)){
