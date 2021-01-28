@@ -240,6 +240,7 @@ testExpression('Find', 'find([1..10] (item){ item === 6 })', 6);
 testExpression('indexOf', 'indexOf([1..10] 6)', 5);
 
 testExpression('String', 'String(1)', "1");
+testExpression('Boolean', 'Boolean(1)', true);
 testExpression('Number', 'Number("1")', 1);
 
 testExpression('dots and that', 'thing.bar()', {thing: { bar: function(){return 'foo';}}}, 'foo');
