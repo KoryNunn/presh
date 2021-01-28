@@ -23,6 +23,7 @@ module.exports = {
     },
     String: String,
     Number: Number,
+    Boolean: Boolean,
     math: Math,
     isNaN: isNaN
 };
