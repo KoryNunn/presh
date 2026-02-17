@@ -74,12 +74,12 @@ function functionExpression(token, scope){
         return execute(token.content, functionScope);
     };
 
-    if(token.identifier){
-        scope.set(token.identifier.name, fn);
-    }
-
     var resultFn = function(){
         return fn.apply(this, arguments).value;
+    }
+
+    if(token.identifier){
+        scope.set(token.identifier.name, resultFn);
     }
 
     preshFunctions.set(resultFn, fn);

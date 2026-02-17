@@ -327,3 +327,12 @@ test('overriden prototypical values', function(t){
     t.notOk(result.error, 'did not error');
     t.equal(result.value, '1', 'Got expected result');
 });
+
+testExpression('External filter with named predicate returns only matching values', `
+    isNegative(value){ value < 0 }
+    filter([-1 2 -3] isNegative)
+`, {
+    filter: function(items, fn){
+        return items.filter(fn);
+    }
+}, [-1, -3]);
